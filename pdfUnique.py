@@ -153,7 +153,7 @@ def downloadExt(files, namePdf, numPgOne, numPgTwo, obj):
     if nFiles > 0:
         mensResult(1, len(files), 'zip', fileTmp, fileZip)
     else:
-        strEmpty = f'😢 Extração fracassada!\n🔴 arquivo {namePdf} \nsem {obj} extraível no intervalo de páginas {numPgOne}-{numPgTwo}!'
+        strEmpty = f"😢 Operação fracassada para '{obj}' do arquivo '{namePdf}', intervalo de páginas {numPgOne}-{numPgTwo}!"
         config(strEmpty)
 
 def rotatePdf(filePdf, index):
@@ -320,14 +320,15 @@ def tableConvert(filePdf):
     tables = st.session_state[keyDocs]
     listTables = []
     for table in tables:
-        fileTable = f'{name}{table}'
         allTables = extractTables(filePdf)
-        workbook = xlsxwriter.Workbook(fileTable)
-        worksheet = workbook.add_worksheet('aba_dados')
-        for rowNum, rowData in enumerate(allTables):
-            worksheet.write_row(rowNum, 0, rowData)
-        workbook.close()
-        listTables.append(fileTable)    
+        if len(allTables) > 0:
+            fileTable = f'{name}{table}'
+            workbook = xlsxwriter.Workbook(fileTable)
+            worksheet = workbook.add_worksheet('aba_dados')
+            for rowNum, rowData in enumerate(allTables):
+                worksheet.write_row(rowNum, 0, rowData)
+            workbook.close()
+            listTables.append(fileTable)    
     return listTables
      
 @st.cache_data 
@@ -461,13 +462,22 @@ def selPdfToAll(docPdf, numPgOne, numPgTwo, namePdf, index, rotate, sufix):
     outputPdf = createPdfSel(docPdf, numPgOne, numPgTwo, namePdf, index, rotate)
     if sufix.find('img') >= 0:
         listFiles = imagesConvert(outputPdf)
+        obj = 'imagem'
     elif sufix.find('doc') >= 0:
         listFiles = docxConvert(outputPdf)
+        obj = 'documento'
     elif sufix.find('table') >= 0:
         listFiles = tableConvert(outputPdf)
+        obj = 'tabela'
     elif sufix.find('slide') >= 0:
         listFiles = ppTxConvert(outputPdf)
-    downloadExt(listFiles, namePdf, numPgOne, numPgTwo, sufix)
+        obj = 'slide'
+    if len(listFiles) > 0:
+        downloadExt(listFiles, namePdf, numPgOne, numPgTwo, sufix)
+    else:
+        strEmpty = f'😢 Conversão em "{obj}" fracassada para o arquivo "{namePdf}", intervalo de páginas {numPgOne}-{numPgTwo}!'
+        strEmpty += 'Verifique se há necessidade de OCR (reconhecimento óptico de caracteres).'
+        config(strEmpty)   
     
 def selPdfToQrcode(docPdf, numPgOne, numPgTwo, namePdf, index):
     outputPdf = createPdfSel(docPdf, numPgOne, numPgTwo, namePdf, index, True)
@@ -534,12 +544,14 @@ def selTxtUrlPgs(docPdf, numPgOne, numPgTwo, namePdf, mode, index):
         text = extractText(outputPdf)
         strLabel = "Download_text"
         outputTxt = f'{namePdf}_{numPgOne}_{numPgTwo}_text.txt'
-        strEmpty = f'😢 Extração fracassada!\n🔴 arquivo {namePdf} \nsem texto extraível no intervalo de páginas {numPgOne}-{numPgTwo}!'
+        strEmpty = f'😢 Extração de "texto" fracassada para o arquivo "{namePdf}", intervalo de páginas {numPgOne}-{numPgTwo}!'
+        strEmpty += '\nVerifique se há necessidade de OCR (reconhecimento óptico de caracteres).'  
     else:
         text = extractUrls(outputPdf)
         strLabel = "Download_urls"
         outputTxt = f'{namePdf}_{numPgOne}_{numPgTwo}_urls.txt'
-        strEmpty = f'😢 Extração fracassada!\n🔴 arquivo {namePdf} \nsem URL extraível no intervalo de páginas {numPgOne}-{numPgTwo}!'
+        strEmpty = f'😢 Extração de "URL" fracassada para o arquivo "{namePdf}", intervalo de páginas {numPgOne}-{numPgTwo}!' 
+        strEmpty += '\nVerifique se há necessidade de OCR (reconhecimento óptico de caracteres).'
     if len(text.strip()) > 0:
         mensResult(2, 1, 'txt', text, outputTxt)        
     else:
@@ -1083,15 +1095,20 @@ def main():
                         with st.spinner(expr):
                             selPdfToAll(docPdf, numPgOne, numPgTwo, pdfName, indexAng, True, 'pdf_img')
                     except: 
-                        config(f'😢 Conversão de PDF em imagem fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
+                        strEmpty = f'😢 Conversão de PDF em "imagem" fracassada para o arquivo "{pdfName}", intervalo de páginas {numPgOne}-{numPgTwo}!'
+                        config(strEmpty)
             if buttToPower:
-                try:
-                    expr = f'{dictButts[keysButts[13]][2]} {pdfName} n{exprPre}'
-                    with st.spinner(expr):
-                        selPdfToAll(docPdf, numPgOne, numPgTwo, pdfName, indexAng, False, 'pdf_slide')
-                        #selPdfToPPtx(docPdf, numPgOne, numPgTwo, pdfName, indexAng)                      
-                except:
-                    config(f'😢 Conversão de PDF em Power Point fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
+                nSlides = len(st.session_state[keySlides])
+                if nSlides == 0:
+                    config('😢 Nenhum tipo de slide foi escolhido!\nAbra a tela para realizar essa escolha!')
+                else:
+                    try:
+                        expr = f'{dictButts[keysButts[13]][2]} {pdfName} n{exprPre}'
+                        with st.spinner(expr):
+                            selPdfToAll(docPdf, numPgOne, numPgTwo, pdfName, indexAng, False, 'pdf_slide')                      
+                    except:
+                        strEmpty = f'😢 Conversão de PDF em "slide" fracassada para o arquivo "{pdfName}", intervalo de páginas {numPgOne}-{numPgTwo}!'
+                        config(strEmpty)
             if buttQrcode:
                 failCode = False
                 for code in qrCodeKeys: 
@@ -1279,6 +1296,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
