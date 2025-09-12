@@ -856,14 +856,18 @@ def main():
             valMxSize = round(uploadPdf.size/(1024**2), 2)
             colPgOne, colPgTwo, colSize, colSlider = st.columns([1.2, 1.2, 1.4, 1.8], vertical_alignment='bottom')
             numPgOne = colPgOne.number_input(label='Página inicial  (:red[**1**])', key=listKeys[0], 
-                                             min_value=1, max_value=valMx)
+                                             min_value=1, max_value=valMx, 
+                                             help=f'Digite, incremente ou decremente um número entre "1" e "{valMx}".')
             numPgTwo = colPgTwo.number_input(label=f'Página final  (:red[**{valMx}**])', key=listKeys[1], 
-                                             min_value=1, max_value=valMx)
+                                             min_value=1, max_value=valMx, 
+                                             help=f'Digite, incremente ou decremente um número até o máximo de "{valMx}".')
             valPgSize = colSize.number_input(label='Tamanho para divisão (:red[**MB**])', key=listKeys[3], 
                                              min_value=dictKeys[listKeys[3]], step=dictKeys[listKeys[3]],  
-                                             max_value=valMxSize)
+                                             max_value=valMxSize, 
+                                             help='Digite, incremente ou decremente o tamanho de cada fração do arquivo.')
             valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
-                                                 key=listKeys[2])
+                                                 key=listKeys[2], 
+                                                 help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
             colPgs, colWords, colOptPlans, colOptDocs, colOptImgs, colOptSlides, colPerson = st.columns(spec=7)
             buttToPages = colPgs.button(label=dictButts[keysButts[15]][0], use_container_width=True, 
                                             icon=dictButts[keysButts[15]][1], key=keysButts[15], 
@@ -1275,5 +1279,6 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
