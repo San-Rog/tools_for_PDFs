@@ -10,7 +10,7 @@ def main():
         pass
                          
 if __name__ == '__main__':
-    with open(r'C:\Users\ACER\Documents\configuration.css') as f:
+    with open('configuration.css') as f:
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
