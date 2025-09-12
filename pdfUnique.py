@@ -6,6 +6,7 @@ import os
 import re
 import io
 import time
+import unidecode
 import textwrap
 import xlsxwriter
 import numpy as np
@@ -392,11 +393,8 @@ def createImgQrCode():
         valueState = st.session_state[key]
         if type(valueState) == tuple:
             valueState = valueState[0]
-        if len(valueState.strip()) == 0:
-            valuesQrcode.append(valuesReserve[k])
-        else:
-            valuesQrcode.append(valueState)    
-    qrcode = helpers.make_mecard(name=valuesQrcode[0], 
+        valuesQrcode.append(valueState.strip())
+    qrcode = helpers.make_mecard(name=unidecode.unidecode(valuesQrcode[0]), 
                                  phone=valuesQrcode[1], 
                                  email=valuesQrcode[2])
     qrcode.save(fileImg, scale=1)
@@ -692,10 +690,12 @@ def validatePhone(phone):
 def exibeQrCode():
     @st.dialog('Dados')
     def config():
-        nameUser = st.text_input(label='Nome', key=qrCodeKeys[0], placeholder=valuesReserve[0], 
-                                 value='')
-        phoneUser = st.text_input(label='Telefone', key=qrCodeKeys[1], placeholder=valuesReserve[1], value=''), 
-        emailUser = st.text_input(label='E-mail', key=qrCodeKeys[2], placeholder=valuesReserve[2], value='')
+        nameUser = st.text_input(label='Nome', help='Informe nome e sobrenome. A acentuação será desconsiderada.',
+                                 key=qrCodeKeys[0], placeholder=valuesReserve[0], value='')
+        phoneUser = st.text_input(label='Telefone', help='Informe código de área (DDD) e demais dígitos. O uso de separadores é opcional.',
+                                  key=qrCodeKeys[1], placeholder=valuesReserve[1], value=''), 
+        emailUser = st.text_input(label='E-mail', help="Informe o correio eletrônico completo. O uso de '@' e ponto ('.') é obrigatório.",
+                                  key=qrCodeKeys[2], placeholder=valuesReserve[2], value='')
         if len(phoneUser[0].strip()) > 0:
             if not validatePhone(phoneUser[0]):
                 st.error(f"O telefone '{phoneUser[0]}' não é válido! Tente de novo!")
@@ -1275,4 +1275,5 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
