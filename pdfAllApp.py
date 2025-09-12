@@ -20,7 +20,8 @@ if __name__ == '__main__':
     nameApp = 'Ferramentas PDF'
     st.set_page_config(page_title=nameApp,  page_icon=":material/files:", 
                        layout='wide')
-    with open(r'C:\Users\ACER\Documents\configuration.css') as f:
+    with open('configuration.css') as f:
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
     main()
+
