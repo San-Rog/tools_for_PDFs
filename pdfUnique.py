@@ -25,7 +25,6 @@ from pptx.enum.text import PP_ALIGN
 from brutils import is_valid_email
 from brutils import is_valid_phone
 from brutils import remove_symbols_phone
-import pyautogui
     
 @st.cache_data   
 def nameFile():
@@ -78,7 +77,6 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                 crt = f'{optionsSel[opt]} {st.session_state[listKeys[6]]}' 
         else: 
           crt = f'segmentação com base em {st.session_state[listKeys[6]]} página(s)'  
-    upDownScroll(-1)
     colMens, colDown = st.columns([8, 2]) 
     if value == 1:
         if modelButt == 'zip': 
@@ -88,9 +86,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                             file_name=fileFinal,
                                             mime='application/zip', 
                                             icon=":material/download:", 
-                                            use_container_width=True, 
-                                            on_click=upDownScroll, 
-                                            args=[1])
+                                            use_container_width=True)
         colMens.success(f'Gerado o zipado :blue[**{fileFinal}**] com ***{nFiles}*** arquivo(s) (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️') 
     elif value == 0:
@@ -99,9 +95,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 file_name=fileFinal,
                                 mime='application/octet-stream', 
                                 icon=":material/download:", 
-                                use_container_width=True, 
-                                on_click=upDownScroll, 
-                                args=[1])
+                                use_container_width=True)
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️') 
     elif value == 2:
@@ -110,9 +104,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 file_name=fileFinal,
                                 mime="text/csv", 
                                 icon=":material/download:", 
-                                use_container_width=True, 
-                                on_click=upDownScroll, 
-                                args=[1])
+                                use_container_width=True)
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
     elif value == 3:
@@ -120,9 +112,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 data=fileTmp,
                                 file_name=fileFinal,
                                 mime='application/octet-stream', 
-                                use_container_width=True, 
-                                on_click=upDownScroll, 
-                                args=[1])
+                                use_container_width=True)
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
     elif value == 4:
@@ -130,11 +120,10 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 data=fileTmp,
                                 file_name=fileFinal,
                                  mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
-                                use_container_width=True, 
-                                on_click=upDownScroll, 
-                                args=[1])
+                                use_container_width=True)
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
+    upDownScroll(-1)
     
 def extractImgs(filePdf):
     docPdf = pymupdf.open(filePdf)
@@ -869,10 +858,22 @@ def seqPages(numPgOne, numPgTwo):
     return listPgs  
 
 def upDownScroll(mode):
-    time.sleep(0.5)
-    points = 10000000
-    pyautogui.scroll(mode*points)
-
+    if mode == 1:
+        jsCode = """
+        <script>
+            var lastNameInput = window.parent.document.querySelector('input[aria-label="👇"]');
+            lastNameInput.focus();
+        </script>
+        """
+    elif mode == -1:
+        jsCode = """
+        <script>
+            var lastNameInput = window.parent.document.querySelector('input[aria-label="👆"]');
+            lastNameInput.focus();
+        </script>
+        """
+    components.html(jsCode)
+    
 def main():
     global uploadPdf
     global valMx
@@ -922,16 +923,15 @@ def main():
                 valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
                                                      key=listKeys[2], 
                                                      help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
-            with st.container(border=None, key='contZero'):
-                colButtFinal, colButtClear = st.columns(spec=2, vertical_alignment='bottom', 
+                colIcoFinal, colButtFinal, colButtClear = st.columns([1, 11, 11], vertical_alignment='bottom', 
                                                        width='stretch')
+                textIcoFinal = colIcoFinal.text_input('👇', icon="🧮", width=40)
                 buttBottomWeb = colButtFinal.button(label=dictButts[keysButts[29]][0], key=keysButts[29], 
                                                    use_container_width=True, icon=dictButts[keysButts[29]][1], 
                                                    help=dictButts[keysButts[29]][-1]) 
                 buttPgClear = colButtClear.button(label=dictButts[keysButts[4]][0], key=keysButts[4], 
                                                   use_container_width=True, icon=dictButts[keysButts[4]][1], 
-                                                  help=dictButts[keysButts[4]][-1])  
-                                                  
+                                                  help=dictButts[keysButts[4]][-1]) 
             with st.container(border=4, key='contThree'):
                 colEmptyOne, colSupport, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
                                                                   width='stretch')
@@ -1051,12 +1051,12 @@ def main():
                 buttToPower = colToPower.button(label=dictButts[keysButts[13]][0], key=keysButts[13], 
                                                 use_container_width=True, icon=dictButts[keysButts[13]][1], 
                                                 help=dictButts[keysButts[13]][-1])       
-            with st.container(border=None, key='contSeven'):
-                contDown, = st.columns(spec=1, vertical_alignment='bottom', 
+                colIcoIni, colButtIni = st.columns([1,22], vertical_alignment='bottom', 
                                        width='stretch')
-                buttTopWeb = contDown.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
-                                                 use_container_width=True, icon=dictButts[keysButts[30]][1], 
-                                                 help=dictButts[keysButts[30]][-1])
+                textIcoIni = colIcoIni.text_input('👆', icon="🧮", width=40)
+                buttTopWeb = colButtIni.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
+                                               use_container_width=True, icon=dictButts[keysButts[30]][1], 
+                                               help=dictButts[keysButts[30]][-1])
             if numPgTwo >= numPgOne: 
                 numPgIni = numPgOne
                 numPgFinal = numPgTwo
@@ -1399,6 +1399,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
