@@ -25,7 +25,7 @@ from pptx.enum.text import PP_ALIGN
 from brutils import is_valid_email
 from brutils import is_valid_phone
 from brutils import remove_symbols_phone
-#import pyautogui
+import pyautogui
     
 @st.cache_data   
 def nameFile():
@@ -1399,6 +1399,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
