@@ -25,6 +25,7 @@ from pptx.enum.text import PP_ALIGN
 from brutils import is_valid_email
 from brutils import is_valid_phone
 from brutils import remove_symbols_phone
+import pyautogui
     
 @st.cache_data   
 def nameFile():
@@ -77,7 +78,9 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                 crt = f'{optionsSel[opt]} {st.session_state[listKeys[6]]}' 
         else: 
           crt = f'segmentação com base em {st.session_state[listKeys[6]]} página(s)'  
-    colMens, colDown = st.columns([8, 2]) 
+    colIcoLim, colMens, colDown = st.columns([1, 16, 4], vertical_alignment='bottom', 
+                                                         width='stretch')
+    textIcoLim = colIcoLim.text_input('👍', icon="🏴", width=40)
     if value == 1:
         if modelButt == 'zip': 
                 with open(fileTmp, "rb") as file:
@@ -123,7 +126,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 use_container_width=True)
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
-    upDownScroll(-1)
+    upDownScroll(2)
     
 def extractImgs(filePdf):
     docPdf = pymupdf.open(filePdf)
@@ -858,20 +861,18 @@ def seqPages(numPgOne, numPgTwo):
     return listPgs  
 
 def upDownScroll(mode):
-    if mode == 1:
-        jsCode = """
-        <script>
-            var lastNameInput = window.parent.document.querySelector('input[aria-label="👇"]');
-            lastNameInput.focus();
-        </script>
-        """
+    if mode == 1: 
+        label = "👇"
     elif mode == -1:
-        jsCode = """
+        label = "👆"
+    elif mode == 2:
+        label = "👍"
+    jsCode = f"""
         <script>
-            var lastNameInput = window.parent.document.querySelector('input[aria-label="👆"]');
+            var lastNameInput = window.parent.document.querySelector('input[aria-label={label}]');
             lastNameInput.focus();
         </script>
-        """
+    """
     components.html(jsCode)
     
 def main():
@@ -925,7 +926,7 @@ def main():
                                                      help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
                 colIcoFinal, colButtFinal, colButtClear = st.columns([1, 11, 11], vertical_alignment='bottom', 
                                                        width='stretch')
-                textIcoFinal = colIcoFinal.text_input('👇', icon="🧮", width=40)
+                textIcoFinal = colIcoFinal.text_input('👇', icon="🚩", width=40)
                 buttBottomWeb = colButtFinal.button(label=dictButts[keysButts[29]][0], key=keysButts[29], 
                                                    use_container_width=True, icon=dictButts[keysButts[29]][1], 
                                                    help=dictButts[keysButts[29]][-1]) 
@@ -1053,7 +1054,7 @@ def main():
                                                 help=dictButts[keysButts[13]][-1])       
                 colIcoIni, colButtIni = st.columns([1,22], vertical_alignment='bottom', 
                                        width='stretch')
-                textIcoIni = colIcoIni.text_input('👆', icon="🧮", width=40)
+                textIcoIni = colIcoIni.text_input('👆', icon="🚩", width=40)
                 buttTopWeb = colButtIni.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
                                                use_container_width=True, icon=dictButts[keysButts[30]][1], 
                                                help=dictButts[keysButts[30]][-1])
@@ -1399,6 +1400,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
