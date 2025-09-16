@@ -25,6 +25,7 @@ from pptx.enum.text import PP_ALIGN
 from brutils import is_valid_email
 from brutils import is_valid_phone
 from brutils import remove_symbols_phone
+import pyautogui
     
 @st.cache_data   
 def nameFile():
@@ -77,6 +78,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                 crt = f'{optionsSel[opt]} {st.session_state[listKeys[6]]}' 
         else: 
           crt = f'segmentação com base em {st.session_state[listKeys[6]]} página(s)'  
+    upDownScroll(-1)
     colMens, colDown = st.columns([8, 2]) 
     if value == 1:
         if modelButt == 'zip': 
@@ -86,7 +88,9 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                             file_name=fileFinal,
                                             mime='application/zip', 
                                             icon=":material/download:", 
-                                            use_container_width=True)
+                                            use_container_width=True, 
+                                            on_click=upDownScroll, 
+                                            args=[1])
         colMens.success(f'Gerado o zipado :blue[**{fileFinal}**] com ***{nFiles}*** arquivo(s) (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️') 
     elif value == 0:
@@ -95,7 +99,9 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 file_name=fileFinal,
                                 mime='application/octet-stream', 
                                 icon=":material/download:", 
-                                use_container_width=True)
+                                use_container_width=True, 
+                                on_click=upDownScroll, 
+                                args=[1])
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️') 
     elif value == 2:
@@ -104,7 +110,9 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 file_name=fileFinal,
                                 mime="text/csv", 
                                 icon=":material/download:", 
-                                use_container_width=True)
+                                use_container_width=True, 
+                                on_click=upDownScroll, 
+                                args=[1])
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
     elif value == 3:
@@ -112,7 +120,9 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 data=fileTmp,
                                 file_name=fileFinal,
                                 mime='application/octet-stream', 
-                                use_container_width=True)
+                                use_container_width=True, 
+                                on_click=upDownScroll, 
+                                args=[1])
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
     elif value == 4:
@@ -120,7 +130,9 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 data=fileTmp,
                                 file_name=fileFinal,
                                  mime='application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
-                                use_container_width=True)
+                                use_container_width=True, 
+                                on_click=upDownScroll, 
+                                args=[1])
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
     
@@ -755,7 +767,12 @@ def config(str):
     
 @st.dialog(' ')
 def configTwo(str):
+    st.markdown(str)  
+
+@st.dialog(' ')
+def configSucess(str, icon):
     st.markdown(str)   
+    colMens, colDown = st.columns([8, 2])    
     
 @st.dialog(' ')
 def windowAdd(numPgOne, numPgTwo):
@@ -849,123 +866,197 @@ def seqPages(numPgOne, numPgTwo):
         case 4:
             mult = st.session_state[listKeys[6]]
             listPgs = [pg for pg in range(numPgOne, numPgTwo) if (pg+1)%mult==0]        
-    return listPgs            
+    return listPgs  
+
+def upDownScroll(mode):
+    time.sleep(0.5)
+    points = 10000000
+    pyautogui.scroll(mode*points)
 
 def main():
     global uploadPdf
     global valMx
     global sufix
     sufix = ['']
-    with st.container(border=6, key='contOne'):
+    with st.container(border=6, key='contOne', vertical_alignment='top'):
         uploadPdf = st.file_uploader('Selecionar arquivo PDF', 
                                      type=['pdf'], 
                                      accept_multiple_files=False,
                                      label_visibility="collapsed")
         if uploadPdf is not None:
+            number = 4
             pdfName = uploadPdf.name
             docPdf = pymupdf.open(stream=uploadPdf.read(), filetype="pdf")
             valMx = docPdf.page_count 
             valMxSize = round(uploadPdf.size/(1024**2), 2)
-            colPgOne, colPgTwo, colSize, colSlider = st.columns([1.2, 1.2, 1.4, 1.8], vertical_alignment='bottom')
-            numPgOne = colPgOne.number_input(label='Página inicial  (:red[**1**])', key=listKeys[0], 
-                                             min_value=1, max_value=valMx, 
-                                             help=f'Digite, incremente ou decremente um número entre "1" e "{valMx}".')
-            numPgTwo = colPgTwo.number_input(label=f'Página final  (:red[**{valMx}**])', key=listKeys[1], 
-                                             min_value=1, max_value=valMx, 
-                                             help=f'Digite, incremente ou decremente um número até o máximo de "{valMx}".')
-            valPgSize = colSize.number_input(label='Tamanho para divisão (:red[**MB**])', key=listKeys[3], 
-                                             min_value=dictKeys[listKeys[3]], step=dictKeys[listKeys[3]],  
-                                             max_value=valMxSize, 
-                                             help='Digite, incremente ou decremente o tamanho de cada fração do arquivo.')
-            valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
-                                                 key=listKeys[2], 
-                                                 help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
-            colPgs, colWords, colOptPlans, colOptDocs, colOptImgs, colOptSlides, colPerson = st.columns(spec=7)
-            buttToPages = colPgs.button(label=dictButts[keysButts[15]][0], use_container_width=True, 
+            sizeColsDate = [1.2, 1.2, 1.4, 1.8]
+            lenColsDate = len(sizeColsDate)
+            sizeColsSuppOne = [1 for n in range(number)]
+            sizeColsSuppTwo = sizeColsSuppOne
+            lenColsSupp = len(sizeColsSuppOne) + len(sizeColsSuppTwo)
+            sizeColsText = sizeColsSuppOne
+            lenColsText = len(sizeColsText)
+            sizeColsMultOne = [1 for n in range(number)]
+            sizeColsMultTwo = [1 for n in range(number)]
+            sizeColsMultThree = [1 for n in range(number)]
+            lenColsMult = len(sizeColsMultOne) + len(sizeColsMultTwo) + len(sizeColsMultThree)
+            sizeColsFormat = [1 for n in range(number)]
+            lenColsFormat = len(sizeColsFormat)
+            with st.container(border=4, key='contTwo'):
+                colEmptyOne, colDate, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                                                               width='stretch')
+                colDate.markdown(f'📋:blue[**Parâmetros básicos**] (:red[**{lenColsDate}**])', unsafe_allow_html=True, 
+                                 help='Exibe as opções básicas de paginação, ângulo de rotação e de divisão por tamanho.')
+                colPgOne, colPgTwo, colSize, colSlider = st.columns(sizeColsDate, vertical_alignment='bottom', 
+                                                                    width='stretch')
+                numPgOne = colPgOne.number_input(label='Página inicial  (:red[**1**])', key=listKeys[0], 
+                                                 min_value=1, max_value=valMx, 
+                                                 help=f'Digite, incremente ou decremente um número entre "1" e "{valMx}".')
+                numPgTwo = colPgTwo.number_input(label=f'Página final  (:red[**{valMx}**])', key=listKeys[1], 
+                                                 min_value=1, max_value=valMx, 
+                                                 help=f'Digite, incremente ou decremente um número até o máximo de "{valMx}".')
+                valPgSize = colSize.number_input(label='Tamanho para divisão (:red[**MB**])', key=listKeys[3], 
+                                                 min_value=dictKeys[listKeys[3]], step=dictKeys[listKeys[3]],  
+                                                 max_value=valMxSize, 
+                                                 help='Digite, incremente ou decremente o tamanho de cada fração do arquivo.')
+                valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
+                                                     key=listKeys[2], 
+                                                     help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
+            with st.container(border=None, key='contZero'):
+                colButtFinal, colButtClear = st.columns(spec=2, vertical_alignment='bottom', 
+                                                       width='stretch')
+                buttBottomWeb = colButtFinal.button(label=dictButts[keysButts[29]][0], key=keysButts[29], 
+                                                   use_container_width=True, icon=dictButts[keysButts[29]][1], 
+                                                   help=dictButts[keysButts[29]][-1]) 
+                buttPgClear = colButtClear.button(label=dictButts[keysButts[4]][0], key=keysButts[4], 
+                                                  use_container_width=True, icon=dictButts[keysButts[4]][1], 
+                                                  help=dictButts[keysButts[4]][-1])  
+                                                  
+            with st.container(border=4, key='contThree'):
+                colEmptyOne, colSupport, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                                                                  width='stretch')
+                colSupport.markdown(f'🔩:blue[**Telas de apoio**] (:red[**{lenColsSupp}**])', unsafe_allow_html=True, 
+                                    help='Exibe as opções para as telas de apoio.')                                                        
+                colPgs, colWords, colptRotate, colOptPlans = st.columns(sizeColsSuppOne, vertical_alignment='bottom', 
+                                                                        width='stretch')                
+                colOptDocs, colOptImgs, colOptSlides, colPerson = st.columns(sizeColsSuppTwo, vertical_alignment='bottom', 
+                                                                             width='stretch')
+                buttToPages = colPgs.button(label=dictButts[keysButts[15]][0], use_container_width=True, 
                                             icon=dictButts[keysButts[15]][1], key=keysButts[15], 
                                             help=dictButts[keysButts[15]][-1])
-            buttOptWords = colWords.button(label=dictButts[keysButts[19]][0], use_container_width=True, 
+                buttOptWords = colWords.button(label=dictButts[keysButts[19]][0], use_container_width=True, 
                                                icon=dictButts[keysButts[19]][1], key=keysButts[19], 
                                                help=dictButts[keysButts[19]][-1]) 
-            buttOptPlans = colOptPlans.button(label=dictButts[keysButts[23]][0], use_container_width=True, 
-                                              icon=dictButts[keysButts[23]][1], key=keysButts[23], 
-                                              help=dictButts[keysButts[23]][-1]) 
-            buttOptDocs = colOptDocs.button(label=dictButts[keysButts[25]][0], use_container_width=True, 
-                                            icon=dictButts[keysButts[25]][1], key=keysButts[25], 
-                                            help=dictButts[keysButts[25]][-1])
-            buttOptImgs = colOptImgs.button(label=dictButts[keysButts[24]][0], use_container_width=True, 
-                                            icon=dictButts[keysButts[24]][1], key=keysButts[24], 
-                                            help=dictButts[keysButts[24]][-1]) 
-            buttOptSlides = colOptSlides.button(label=dictButts[keysButts[26]][0], use_container_width=True, 
-                                                icon=dictButts[keysButts[26]][1], key=keysButts[26], 
-                                                help=dictButts[keysButts[26]][-1]) 
-            buttPerson = colPerson.button(label=dictButts[keysButts[16]][0], use_container_width=True, 
-                                              icon=dictButts[keysButts[16]][1], key=keysButts[16], 
-                                              help=dictButts[keysButts[16]][-1])
-            colButtAct, colButtTxt, colButtSel, colButtDel, colButtClear = st.columns(5)
-            buttPgAct = colButtAct.button(label=dictButts[keysButts[0]][0], key=keysButts[0], 
-                                          use_container_width=True, icon=dictButts[keysButts[0]][1], 
-                                          help=dictButts[keysButts[0]][-1])
-            buttPgTxt = colButtTxt.button(label=dictButts[keysButts[1]][0], key=keysButts[1], 
-                                          use_container_width=True, icon=dictButts[keysButts[1]][1], 
-                                          help=dictButts[keysButts[1]][-1])
-            buttPgSel = colButtSel.button(label=dictButts[keysButts[2]][0], key=keysButts[2], 
-                                          use_container_width=True, icon=dictButts[keysButts[2]][1], 
-                                          help=dictButts[keysButts[2]][-1])
-            buttPgDel = colButtDel.button(label=dictButts[keysButts[3]][0], key=keysButts[3], 
-                                          use_container_width=True, icon=dictButts[keysButts[3]][1], 
-                                          help=dictButts[keysButts[3]][-1])
-            buttPgClear = colButtClear.button(label=dictButts[keysButts[4]][0], key=keysButts[4], 
-                                              use_container_width=True, icon=dictButts[keysButts[4]][1], 
-                                              help=dictButts[keysButts[4]][-1])
-            colButtUrl, colButtImg, colButtSize, colButtMark, colButtInfo = st.columns(5)
-            buttPdfUrl = colButtUrl.button(label=dictButts[keysButts[5]][0], key=keysButts[5], 
-                                           use_container_width=True, icon=dictButts[keysButts[5]][1], 
-                                           help=dictButts[keysButts[5]][-1])
-            buttPdfImg = colButtImg.button(label=dictButts[keysButts[6]][0], key=keysButts[6], 
-                                           use_container_width=True, icon=dictButts[keysButts[6]][1], 
-                                           help=dictButts[keysButts[6]][-1])
-            buttPdfSize = colButtSize.button(label=dictButts[keysButts[7]][0], key=keysButts[7], 
-                                             use_container_width=True, icon=dictButts[keysButts[7]][1], 
-                                             help=dictButts[keysButts[7]][-1])
-            buttPdfMark = colButtMark.button(label=dictButts[keysButts[8]][0], key=keysButts[8], 
-                                             use_container_width=True, icon=dictButts[keysButts[8]][1], 
-                                             help=dictButts[keysButts[8]][-1])
-            buttPdfInfo =  colButtInfo.button(label=dictButts[keysButts[9]][0], key=keysButts[9], 
-                                              use_container_width=True, icon=dictButts[keysButts[9]][1], 
-                                              help=dictButts[keysButts[9]][-1])
-            colTxtTable, colToTable, colToImg, colToPower, colCode = st.columns(5)
-            buttTxtTable = colTxtTable.button(label=dictButts[keysButts[10]][0], key=keysButts[10], 
-                                              use_container_width=True, icon=dictButts[keysButts[10]][1], 
-                                              help=dictButts[keysButts[10]][-1])
-            buttToWord = colToTable.button(label=dictButts[keysButts[11]][0], key=keysButts[11], 
-                                           use_container_width=True, icon=dictButts[keysButts[11]][1], 
-                                           help=dictButts[keysButts[11]][-1])
-            buttToImg = colToImg.button(label=dictButts[keysButts[12]][0], key=keysButts[12], 
-                                        use_container_width=True, icon=dictButts[keysButts[12]][1], 
-                                        help=dictButts[keysButts[12]][-1])
-            buttToPower = colToPower.button(label=dictButts[keysButts[13]][0], key=keysButts[13], 
-                                            use_container_width=True, icon=dictButts[keysButts[13]][1], 
-                                            help=dictButts[keysButts[13]][-1])   
-            buttQrcode =  colCode.button(label=dictButts[keysButts[14]][0], key=keysButts[14], 
-                                         use_container_width=True, icon=dictButts[keysButts[14]][1], 
-                                         help=dictButts[keysButts[14]][-1])   
-            colRemImg, colRemWrd, colCodePdf, colDecodePdf, colRemoveMark = st.columns(5)
-            buttRemoveImg = colRemImg.button(label=dictButts[keysButts[17]][0], key=keysButts[17], 
-                                            use_container_width=True, icon=dictButts[keysButts[17]][1], 
-                                            help=dictButts[keysButts[17]][-1]) 
-            buttRemoveWords = colRemWrd.button(label=dictButts[keysButts[18]][0], key=keysButts[18], 
-                                               use_container_width=True, icon=dictButts[keysButts[18]][1], 
-                                               help=dictButts[keysButts[18]][-1]) 
-            buttCodePdf = colCodePdf.button(label=dictButts[keysButts[20]][0], key=keysButts[20], 
-                                            use_container_width=True, icon=dictButts[keysButts[20]][1], 
-                                            help=dictButts[keysButts[20]][-1])     
-            buttDecodePdf = colDecodePdf.button(label=dictButts[keysButts[21]][0], key=keysButts[21], 
-                                                use_container_width=True, icon=dictButts[keysButts[21]][1], 
-                                                help=dictButts[keysButts[21]][-1])
-            buttRemoveMark = colRemoveMark.button(label=dictButts[keysButts[22]][0], key=keysButts[22], 
-                                                  use_container_width=True, icon=dictButts[keysButts[22]][1], 
-                                                  help=dictButts[keysButts[22]][-1])  
+                buttOptRotate = colptRotate.button(label=dictButts[keysButts[27]][0], use_container_width=True, 
+                                                   icon=dictButts[keysButts[27]][1], key=keysButts[27], 
+                                                   help=dictButts[keysButts[27]][-1])
+                buttOptPlans = colOptPlans.button(label=dictButts[keysButts[23]][0], use_container_width=True, 
+                                                  icon=dictButts[keysButts[23]][1], key=keysButts[23], 
+                                                  help=dictButts[keysButts[23]][-1]) 
+                buttOptDocs = colOptDocs.button(label=dictButts[keysButts[25]][0], use_container_width=True, 
+                                                icon=dictButts[keysButts[25]][1], key=keysButts[25], 
+                                                help=dictButts[keysButts[25]][-1])
+                buttOptImgs = colOptImgs.button(label=dictButts[keysButts[24]][0], use_container_width=True, 
+                                                icon=dictButts[keysButts[24]][1], key=keysButts[24], 
+                                                help=dictButts[keysButts[24]][-1]) 
+                buttOptSlides = colOptSlides.button(label=dictButts[keysButts[26]][0], use_container_width=True, 
+                                                    icon=dictButts[keysButts[26]][1], key=keysButts[26], 
+                                                    help=dictButts[keysButts[26]][-1]) 
+                buttPerson = colPerson.button(label=dictButts[keysButts[16]][0], use_container_width=True, 
+                                                  icon=dictButts[keysButts[16]][1], key=keysButts[16], 
+                                                  help=dictButts[keysButts[16]][-1])
+            with st.container(border=4, key='contFour'):
+                colEmptyOne, colExtract, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                                                                  width='stretch')
+                colExtract.markdown(f'🎛️:blue[**Extração de objetos**] (:red[**{lenColsText}**])', unsafe_allow_html=True, 
+                                    help='Exibe as opções para extração de texto, imagem, URL e código HTML.') 
+                colButtTxt, colButtImg, colButtUrl, colButtHtml= st.columns(sizeColsText, vertical_alignment='bottom', 
+                                                                 width='stretch')
+                buttPgTxt = colButtTxt.button(label=dictButts[keysButts[1]][0], key=keysButts[1], 
+                                              use_container_width=True, icon=dictButts[keysButts[1]][1], 
+                                              help=dictButts[keysButts[1]][-1])
+                buttPdfImg = colButtImg.button(label=dictButts[keysButts[6]][0], key=keysButts[6], 
+                                               use_container_width=True, icon=dictButts[keysButts[6]][1], 
+                                               help=dictButts[keysButts[6]][-1])
+                buttPdfUrl = colButtUrl.button(label=dictButts[keysButts[5]][0], key=keysButts[5], 
+                                               use_container_width=True, icon=dictButts[keysButts[5]][1], 
+                                               help=dictButts[keysButts[5]][-1])
+                buttPgTxtHtml = colButtHtml.button(label=dictButts[keysButts[28]][0], key=keysButts[28], 
+                                                   use_container_width=True, icon=dictButts[keysButts[28]][1], 
+                                                   help=dictButts[keysButts[28]][-1])
+            with st.container(border=4, key='contFive'):
+                colEmptyOne, colMult, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                                                                  width='stretch')
+                colMult.markdown(f'🎛️:blue[**Outras operações**] (:red[**{lenColsMult}**])', unsafe_allow_html=True, 
+                                  help='Exibe diversas opções de tratamento/manipulação de PDF.') 
+                colButtDiv, colButtSize, colButtSel, colCode = st.columns(sizeColsMultOne, vertical_alignment='bottom', 
+                                                                          width='stretch')
+                colButtMark, colRemoveMark, colCodePdf, colDecodePdf = st.columns(sizeColsMultTwo, vertical_alignment='bottom', 
+                                                                                  width='stretch')
+                colRemImg, colRemWrd, colButtDel, colButtInfo = st.columns(sizeColsMultThree, vertical_alignment='bottom', 
+                                                                           width='stretch')
+                                                                          
+                buttPdfDiv = colButtDiv.button(label=dictButts[keysButts[0]][0], key=keysButts[0], 
+                                              use_container_width=True, icon=dictButts[keysButts[0]][1], 
+                                              help=dictButts[keysButts[0]][-1])
+                buttPdfSize = colButtSize.button(label=dictButts[keysButts[7]][0], key=keysButts[7], 
+                                                 use_container_width=True, icon=dictButts[keysButts[7]][1], 
+                                                 help=dictButts[keysButts[7]][-1])
+                buttPgSel = colButtSel.button(label=dictButts[keysButts[2]][0], key=keysButts[2], 
+                                              use_container_width=True, icon=dictButts[keysButts[2]][1], 
+                                              help=dictButts[keysButts[2]][-1])
+                buttQrcode =  colCode.button(label=dictButts[keysButts[14]][0], key=keysButts[14], 
+                                             use_container_width=True, icon=dictButts[keysButts[14]][1], 
+                                             help=dictButts[keysButts[14]][-1])                                             
+                buttPdfMark = colButtMark.button(label=dictButts[keysButts[8]][0], key=keysButts[8], 
+                                                 use_container_width=True, icon=dictButts[keysButts[8]][1], 
+                                                 help=dictButts[keysButts[8]][-1])
+                buttRemoveMark = colRemoveMark.button(label=dictButts[keysButts[22]][0], key=keysButts[22], 
+                                                      use_container_width=True, icon=dictButts[keysButts[22]][1], 
+                                                      help=dictButts[keysButts[22]][-1])
+                buttCodePdf = colCodePdf.button(label=dictButts[keysButts[20]][0], key=keysButts[20], 
+                                                use_container_width=True, icon=dictButts[keysButts[20]][1], 
+                                                help=dictButts[keysButts[20]][-1])
+                buttDecodePdf = colDecodePdf.button(label=dictButts[keysButts[21]][0], key=keysButts[21], 
+                                                    use_container_width=True, icon=dictButts[keysButts[21]][1], 
+                                                    help=dictButts[keysButts[21]][-1])
+                buttRemoveImg = colRemImg.button(label=dictButts[keysButts[17]][0], key=keysButts[17], 
+                                                 use_container_width=True, icon=dictButts[keysButts[17]][1], 
+                                                 help=dictButts[keysButts[17]][-1])
+                buttRemoveWords = colRemWrd.button(label=dictButts[keysButts[18]][0], key=keysButts[18], 
+                                                   use_container_width=True, icon=dictButts[keysButts[18]][1], 
+                                                   help=dictButts[keysButts[18]][-1])
+                buttPgDel = colButtDel.button(label=dictButts[keysButts[3]][0], key=keysButts[3], 
+                                              use_container_width=True, icon=dictButts[keysButts[3]][1], 
+                                              help=dictButts[keysButts[3]][-1])
+                buttPdfInfo =  colButtInfo.button(label=dictButts[keysButts[9]][0], key=keysButts[9], 
+                                                  use_container_width=True, icon=dictButts[keysButts[9]][1], 
+                                                  help=dictButts[keysButts[9]][-1])            
+            with st.container(border=4, key='contSix'):
+                colEmptyOne, colMult, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                                                               width='stretch')
+                colMult.markdown(f'🎛️:blue[**Conversão de formato**] (:red[**{lenColsFormat}**])', unsafe_allow_html=True, 
+                                  help='Exibe opções de conversão de PDF em outros formatos.')
+                colToTable, colToWord, colToImg, colToPower = st.columns(sizeColsFormat, vertical_alignment='bottom', 
+                                                                                width='stretch')
+                buttToTable = colToTable.button(label=dictButts[keysButts[10]][0], key=keysButts[10], 
+                                                  use_container_width=True, icon=dictButts[keysButts[10]][1], 
+                                                  help=dictButts[keysButts[10]][-1])
+                buttToWord = colToWord.button(label=dictButts[keysButts[11]][0], key=keysButts[11], 
+                                               use_container_width=True, icon=dictButts[keysButts[11]][1], 
+                                               help=dictButts[keysButts[11]][-1])
+                buttToImg = colToImg.button(label=dictButts[keysButts[12]][0], key=keysButts[12], 
+                                            use_container_width=True, icon=dictButts[keysButts[12]][1], 
+                                            help=dictButts[keysButts[12]][-1])
+                buttToPower = colToPower.button(label=dictButts[keysButts[13]][0], key=keysButts[13], 
+                                                use_container_width=True, icon=dictButts[keysButts[13]][1], 
+                                                help=dictButts[keysButts[13]][-1])       
+            with st.container(border=None, key='contSeven'):
+                contDown, = st.columns(spec=1, vertical_alignment='bottom', 
+                                       width='stretch')
+                buttTopWeb = contDown.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
+                                                 use_container_width=True, icon=dictButts[keysButts[30]][1], 
+                                                 help=dictButts[keysButts[30]][-1])
             if numPgTwo >= numPgOne: 
                 numPgIni = numPgOne
                 numPgFinal = numPgTwo
@@ -973,7 +1064,7 @@ def main():
                 numPgIni = numPgTwo
                 numPgFinal = numPgOne 
             indexAng = valAngles.index(valPgAngle)
-            exprPre = f'o intervalo de páginas {numPgOne} a {numPgTwo}.'            
+            exprPre = f'o intervalo de páginas {numPgOne} a {numPgTwo}.' 
             if buttToPages:
                 windowAdd(numPgOne, numPgTwo)
             if buttOptPlans:
@@ -984,7 +1075,11 @@ def main():
                 windowDocsImgs(keyImgs, 2) 
             if buttOptSlides: 
                 windowDocsImgs(keySlides, 3)
-            if buttPgAct:  
+            if buttBottomWeb: 
+               upDownScroll(-1) 
+            if buttTopWeb:
+               upDownScroll(1) 
+            if buttPdfDiv:  
                 try:
                     expr = f'{dictButts[keysButts[0]][2]} {pdfName} n{exprPre}'
                     with st.spinner(expr):
@@ -1063,7 +1158,7 @@ def main():
                 del st.session_state[listKeys[5]]
                 st.session_state[listKeys[5]] = 0
                 iniFinally(1) 
-            if buttTxtTable:
+            if buttToTable:
                 nTables = len(st.session_state[keyTables])
                 if nTables == 0:
                     config('😢 Nenhum tipo de tabela de saída foi escolhido!\nAbra a tela para realizar essa escolha!')
@@ -1214,7 +1309,7 @@ if __name__ == '__main__':
                 'selModelExtra': 0, 
                 'valueMult': 0}
     listKeys = list(dictKeys.keys())
-    dictButts = {'buttActIni': ['Divisão/páginas', ':material/splitscreen:', 'Dividindo o arquivo ', 
+    dictButts = {'buttDivPg': ['Divisão/blocos', ':material/splitscreen:', 'Dividindo o arquivo ', 
                                 'Divide o arquivo de acordo com o intervalo de páginas.'], 
                  'buttTxt': ['Texto', ':material/text_ad:', 'Extraindo texto do arquivo ', 
                              'Extrai texto do arquivo e grava o resultado como txt.'],
@@ -1235,24 +1330,24 @@ if __name__ == '__main__':
                  'buttInfo': ['Informações', ':material/info:', 'Coligindo informações sobre o arquivo inteiro.', 
                               'Exibe informações sobre o arquivo inteiro.'], 
                  'buttTxtTab': ['Pdf/planilha', ':material/transform:', 'Abrindo janela com formatos de tabela ', 
-                                'Abre janela com formatos de tabela para as páginas selecionadas.'], 
+                                'Converte em formato de tabela para as páginas selecionadas.'], 
                  'buttToWord': ['Pdf/documento', ':material/convert_to_text:', 'Convertendo em Word o arquivo ', 
                                 'Converte em formato docx as páginas selecionadas do arquivo.'], 
                  'buttToImg': ['Pdf/imagem', ':material/modeling:', 'Convertendo em imagem (png) o arquivo ', 
                                'Converte em formato jpg as páginas selecionadas.'], 
                  'buttToPower': ['Pdf/slide', ':material/cycle:', 'Convertendo em slide do PowerPoint o arquivo ', 
                                  'Converte em slide do PowerPoint as páginas selecionadas.'], 
-                 'buttQrcode': ['Qrcode', ':material/qr_code_2:', 'Inserindo qrcode no canto inferior direito do arquivo ', 
-                                'Insere qrcode no rodapé das páginas selecionadas.'], 
-                 'buttPgs': ['Tela/página', ':material/view_list:', 'Exibindo opções de seleção de páginas do arquivo ', 
+                 'buttQrcode': ['QR Code', ':material/qr_code_2:', 'Inserindo QR Code no canto inferior direito do arquivo ', 
+                                'Insere QR Code no rodapé das páginas selecionadas.'], 
+                 'buttPgs': ['Páginas', ':material/view_list:', 'Exibindo opções de seleção de páginas do arquivo ', 
                              'Exibe opções de seleção de páginas.'],
-                 'buttToPerson': ['Dados/qrcode', ':material/person_edit:', 'Abrindo campos a preencher para inserção do qrcode', 
-                                  'Abre opções para preenchimento do qrcode.'], 
+                 'buttToPerson': ['QR Code', ':material/person_edit:', 'Abrindo campos a preencher para inserção do QR Code', 
+                                  'Abre opções para preenchimento do QR Code.'], 
                  'buttRemImage': ['Exclusão/imagens', ':material/folder_off:', 'Removendo todas as imagens do arquivo', 
                                   'Remove todas as imagens das páginas selecionadas.'], 
                  'buttRemWords': ['Exclusão/texto', ':material/clear_all:', 'Removendo todas as ocorrências do texto', 
                                   'Remove o texto das páginas selecionadas.'], 
-                 'buttOptWords': ['Tela/texto', ':material/text_ad:', 'Abrindo tela para inserção de senha ou de texto a ser substituído', 
+                 'buttOptWords': ['Texto', ':material/text_ad:', 'Abrindo tela para inserção de senha ou de texto a ser substituído', 
                                   'Abre tela para digitar senha ou texto a ser apagado.'], 
                  'buttCodify': ['Bloqueio', ':material/lock:', 'Bloqueando o arquivo', 
                                 'Cria senha de bloqueio para o arquivo criado com as´páginas selecionadas.'], 
@@ -1260,14 +1355,22 @@ if __name__ == '__main__':
                                   'Desbloqueia todas as páginas do arquivo.'], 
                  'buttNoMark': ['Exclusão/marcas', ':material/variable_remove:', 'Removendo as marcas de água do arquivo', 
                                 "Cria arquivo com as´páginas selecionadas e sem marca d'água."], 
-                 'buttTypeImgs': ['Tela/planilha', ':material/format_list_bulleted:', 'Abrindo janela para escolha de opções de imagem.', 
+                 'buttTypeImgs': ['Planilhas', ':material/format_list_bulleted:', 'Abrindo janela para escolha de opções de imagem.', 
                                   'Abre janela para escolha de tipos de imagem.'], 
-                 'buttOptImgs': ['Tela/imagem', ':material/checklist:', 'Abrindo janela para seleção de opções de imagem ', 
+                 'buttOptImgs': ['Imagens', ':material/checklist:', 'Abrindo janela para seleção de opções de imagem ', 
                                  'Abre janela com formato de imagem para as páginas selecionadas.'], 
-                 'buttOptDocs': ['Tela/doc', ':material/table:', 'Abrindo janela com opções de documento ', 
+                 'buttOptDocs': ['Documento', ':material/table:', 'Abrindo janela com opções de documento ', 
                                  'Abre janela com formato de documento para as páginas selecioandas.'], 
-                 'buttOptSlides': ['Tela/slide', ':material/event_list:', 'Abrindo janela com opções de slide ', 
-                                   'Abre janela com formato de slide para as páginas selecionadas.']}
+                 'buttOptSlides': ['Slides', ':material/event_list:', 'Abrindo janela com opções de slide ', 
+                                   'Abre janela com formato de slide para as páginas selecionadas.'], 
+                 'buttRotate': ['Rotação', ':material/rotate_auto:', 'Abrindo janela com opções de rotação ', 
+                                 'Abre janela com opções de páginas e rotação.'], 
+                 'buttTxtHtml': ['HTML', ':material/code_blocks:', 'Extraindo texto do arquivo ', 
+                                 'Extrai conteúdo HTML e grava o resultado como txt.'], 
+                 'buttFinal': ['Rodapé do aplicativo', ':material/arrow_circle_down:', 'Indo para o final da página ', 
+                               'Rola até o final da página do aplicativo.'], 
+                 'buttIni': ['Topo do aplicativo', ':material/arrow_circle_up:', 'Extraindo texto do arquivo ', 
+                             'Rola até o topo da página do aplicativo.']}
     keysButts = list(dictButts.keys())
     countPg = []
     namesTeste = []
@@ -1296,6 +1399,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
