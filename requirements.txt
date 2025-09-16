@@ -8,7 +8,6 @@ python-pptx==1.0.2
 segno==1.6.6
 pdf-watermark-remover==0.8.0
 brutils==2.2.0
-pyautogui
 
 
 
