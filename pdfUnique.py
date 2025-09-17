@@ -25,6 +25,7 @@ from pptx.enum.text import PP_ALIGN
 from brutils import is_valid_email
 from brutils import is_valid_phone
 from brutils import remove_symbols_phone
+import pyautogui
     
 @st.cache_data   
 def nameFile():
@@ -879,7 +880,7 @@ def main():
     global valMx
     global sufix
     sufix = ['']
-    with st.container(border=6, key='contOne', vertical_alignment='top'):
+    with st.container(border=None, key='contOne', vertical_alignment='top'):
         uploadPdf = st.file_uploader('Selecionar arquivo PDF', 
                                      type=['pdf'], 
                                      accept_multiple_files=False,
@@ -923,6 +924,7 @@ def main():
                 valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
                                                      key=listKeys[2], 
                                                      help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
+            with st.container(border=None, key='webDown'):                
                 colIcoFinal, colButtFinal, colButtClear = st.columns([1, 11, 11], vertical_alignment='bottom', 
                                                        width='stretch')
                 textIcoFinal = colIcoFinal.text_input('👇', icon="🚩", width=40)
@@ -1051,12 +1053,13 @@ def main():
                 buttToPower = colToPower.button(label=dictButts[keysButts[13]][0], key=keysButts[13], 
                                                 use_container_width=True, icon=dictButts[keysButts[13]][1], 
                                                 help=dictButts[keysButts[13]][-1])       
-                colIcoIni, colButtIni = st.columns([1,22], vertical_alignment='bottom', 
-                                       width='stretch')
-                textIcoIni = colIcoIni.text_input('👆', icon="🚩", width=40)
-                buttTopWeb = colButtIni.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
-                                               use_container_width=True, icon=dictButts[keysButts[30]][1], 
-                                               help=dictButts[keysButts[30]][-1])
+                with st.container(border=None, key='webUp'):                      
+                    colIcoIni, colButtIni = st.columns([1,22], vertical_alignment='bottom', 
+                                           width='stretch')
+                    textIcoIni = colIcoIni.text_input('👆', icon="🚩", width=40)
+                    buttTopWeb = colButtIni.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
+                                                   use_container_width=True, icon=dictButts[keysButts[30]][1], 
+                                                   help=dictButts[keysButts[30]][-1])
             if numPgTwo >= numPgOne: 
                 numPgIni = numPgOne
                 numPgFinal = numPgTwo
@@ -1399,6 +1402,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
