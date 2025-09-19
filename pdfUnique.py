@@ -39,11 +39,16 @@ def nameFile():
     return nowTime
     
 @st.cache_data  
-def extractText(filePdf):
+def extractText(filePdf, mode):
     text = ''
     docPdf = pymupdf.open(filePdf)
     for page in docPdf:
-       text += page.get_text()
+        if mode == 0:
+            text += page.get_text('text')
+        elif mode == 1:
+            text += page.get_text('html')
+        else:
+            text += page.get_text('xhtml')
     docPdf.close()
     return text
         
@@ -309,13 +314,19 @@ def docxConvert(filePdf):
     listDocs = []
     for doc in docs:
         fileDoc = f'{name}{doc}'
-        try:
-            cv = Converter(filePdf)
-            cv.convert(fileDoc, start=0, end=None)
-            cv.close()
+        if doc.lower() == '.html': 
+            text = extractText(filePdf, 2)
+            with open(fileDoc, "w") as file:
+                file.write(text)
             listDocs.append(fileDoc)
-        except: 
-            pass
+        else:
+            try:
+                cv = Converter(filePdf)
+                cv.convert(fileDoc, start=0, end=None)
+                cv.close()
+                listDocs.append(fileDoc)
+            except: 
+                pass
     return listDocs
 
 @st.cache_data 
@@ -545,16 +556,22 @@ def insertImgPdf(filePdf, imgFile):
 def selTxtUrlPgs(docPdf, numPgOne, numPgTwo, namePdf, mode, index):
     outputPdf = createPdfSel(docPdf, numPgOne, numPgTwo, namePdf, index, False)
     if mode == 0:
-        text = extractText(outputPdf)
+        text = extractText(outputPdf, mode)
         strLabel = "Download_text"
         outputTxt = f'{namePdf}_{numPgOne}_{numPgTwo}_text.txt'
         strEmpty = f'😢 Extração de "texto" fracassada para o arquivo "{namePdf}", intervalo de páginas {numPgOne}-{numPgTwo}!'
         strEmpty += '\nVerifique se há necessidade de OCR (reconhecimento óptico de caracteres).'  
-    else:
+    elif mode == 1:
         text = extractUrls(outputPdf)
         strLabel = "Download_urls"
         outputTxt = f'{namePdf}_{numPgOne}_{numPgTwo}_urls.txt'
         strEmpty = f'😢 Extração de "URL" fracassada para o arquivo "{namePdf}", intervalo de páginas {numPgOne}-{numPgTwo}!' 
+        strEmpty += '\nVerifique se há necessidade de OCR (reconhecimento óptico de caracteres).'
+    else: 
+        text = extractText(outputPdf, mode)
+        strLabel = "Download_html"
+        outputTxt = f'{namePdf}_{numPgOne}_{numPgTwo}_hmtl.txt'
+        strEmpty = f'😢 Extração de texto em formato "HTML" fracassada para o arquivo "{namePdf}", intervalo de páginas {numPgOne}-{numPgTwo}!' 
         strEmpty += '\nVerifique se há necessidade de OCR (reconhecimento óptico de caracteres).'
     if len(text.strip()) > 0:
         mensResult(2, 1, 'txt', text, outputTxt)        
@@ -796,19 +813,23 @@ def windowDocsImgs(keys, mode):
     match mode:
         case 0:
             docFormats = ['.csv', '.ods', '.xls', '.xlsx']
+            listSpace = [12, 9]
         case 1:
-            docFormats = ['.doc', '.docx', '.odt', '.rtf']
+            docFormats = ['.doc', '.docx', '.odt', '.rtf', '.html']
+            listSpace = [10, 6]
         case 2: 
             docFormats = ['.jpg', '.jpeg', '.png', '.pnm']
+            listSpace = [12, 9]
         case _:
             docFormats = ['.odp', '.ppt', '.pptx']
-    colSeg, colMark = st.columns([5, 3.5], vertical_alignment='top')
+            listSpace = [16, 12]
+    colSeg, colMark = st.columns(listSpace, vertical_alignment='bottom', width='stretch')
     if mode in [0, 2]: 
-        segms = colSeg.segmented_control(label='Formatos de saída', options=docFormats, selection_mode='multi', 
-                                 default=None)
+        segms = colSeg.segmented_control(label='Formatos de saída', options=sorted(docFormats), selection_mode='multi', 
+                                         default=None)
     else:
         segms = colSeg.pills(label='Formatos de saída', options=docFormats, selection_mode='multi', 
-                                 default=None)
+                             default=None)
     nSegms = len(segms)
     if nSegms > 0:
         colMark.markdown('')
@@ -818,7 +839,8 @@ def windowDocsImgs(keys, mode):
             expr = 'formatos'    
         colMark.markdown(f'{nSegms} {expr}:\n{segms}')
     else:
-        colMark.code('Nada selecionado!', language='Python')
+        textIni = 'Nada selecionado!'
+        colMark.code(textIni.ljust(len(textIni), ' '), language='Python')
     if st.button('retornar'):
         del st.session_state[keys]
         st.session_state[keys] = []
@@ -990,7 +1012,7 @@ def main():
                 buttPdfUrl = colButtUrl.button(label=dictButts[keysButts[5]][0], key=keysButts[5], 
                                                use_container_width=True, icon=dictButts[keysButts[5]][1], 
                                                help=dictButts[keysButts[5]][-1])
-                buttPgTxtHtml = colButtHtml.button(label=dictButts[keysButts[28]][0], key=keysButts[28], 
+                buttPdfHtml = colButtHtml.button(label=dictButts[keysButts[28]][0], key=keysButts[28], 
                                                    use_container_width=True, icon=dictButts[keysButts[28]][1], 
                                                    help=dictButts[keysButts[28]][-1])
             with st.container(border=4, key='contFive'):
@@ -1108,13 +1130,6 @@ def main():
                     config(f'😢 Divisão fracassada!\n🔴 arquivo {namePdf}, intervalo de páginas {numPgOne}-{numPgTwo}!') 
             if buttPerson:
                 exibeQrCode()
-            if buttPgTxt: 
-                try:
-                    expr = f'{dictButts[keysButts[1]][2]} {pdfName} n{exprPre}'
-                    with st.spinner(expr):
-                        selTxtUrlPgs(docPdf, numPgOne, numPgTwo, pdfName, 0, indexAng)
-                except:
-                    config(f'😢 Extração de texto fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
             if buttPgSel:
                 try:
                     expr = f'{dictButts[keysButts[2]][2]} {pdfName} {exprPre}'
@@ -1133,14 +1148,13 @@ def main():
                 del st.session_state[listKeys[5]]
                 st.session_state[listKeys[5]] = 0
                 iniFinally(1) 
-            if buttPdfUrl:
+            if buttPgTxt: 
                 try:
-                    expr = f'{dictButts[keysButts[5]][2]} {pdfName} n{exprPre}'
+                    expr = f'{dictButts[keysButts[1]][2]} {pdfName} n{exprPre}'
                     with st.spinner(expr):
-                        sufix[0] = 'urls'
-                        selTxtUrlPgs(docPdf, numPgOne, numPgTwo, pdfName, 1, indexAng)
+                        selTxtUrlPgs(docPdf, numPgOne, numPgTwo, pdfName, 0, indexAng)
                 except:
-                    config(f'😢 Extração de link fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
+                    config(f'😢 Extração de texto fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
             if buttPdfImg: 
                 try:     
                     expr = f'{dictButts[keysButts[6]][2]} {pdfName} n{exprPre}'
@@ -1149,6 +1163,22 @@ def main():
                         selImgUrlsPgs(docPdf, numPgOne, numPgTwo, pdfName, 2, indexAng)
                 except:
                     config(f'😢 Extração de imagens fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!') 
+            if buttPdfUrl:
+                try:
+                    expr = f'{dictButts[keysButts[5]][2]} {pdfName} n{exprPre}'
+                    with st.spinner(expr):
+                        sufix[0] = 'urls'
+                        selTxtUrlPgs(docPdf, numPgOne, numPgTwo, pdfName, 1, indexAng)
+                except:
+                    config(f'😢 Extração de link fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
+            if buttPdfHtml:
+                try:
+                    expr = f'{dictButts[keysButts[28]][2]} {pdfName} n{exprPre}'
+                    with st.spinner(expr):
+                        sufix[0] = 'html'
+                        selTxtUrlPgs(docPdf, numPgOne, numPgTwo, pdfName, 2, indexAng)
+                except:
+                    config(f'😢 Extração de texto em HTML fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
             if buttPdfSize:
                 expr = f'{dictButts[keysButts[7]][2]} {pdfName} n{exprPre}'
                 try:                
@@ -1435,6 +1465,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
