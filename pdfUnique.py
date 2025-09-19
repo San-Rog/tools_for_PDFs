@@ -25,6 +25,7 @@ from pptx.enum.text import PP_ALIGN
 from brutils import is_valid_email
 from brutils import is_valid_phone
 from brutils import remove_symbols_phone
+import itertools
     
 @st.cache_data   
 def nameFile():
@@ -79,7 +80,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
           crt = f'segmentação com base em {st.session_state[listKeys[6]]} página(s)'  
     colIcoLim, colMens, colDown = st.columns([1, 16, 4], vertical_alignment='bottom', 
                                                          width='stretch')
-    textIcoLim = colIcoLim.text_input('👍', icon="🏴", width=40)
+    textIcoLim = colIcoLim.text_input(icons[6][0], icon=icons[6][1], width=40)
     if value == 1:
         if modelButt == 'zip': 
                 with open(fileTmp, "rb") as file:
@@ -125,7 +126,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                                 use_container_width=True)
         colMens.success(f'Gerado o arquivo :blue[**{fileFinal}**] (:red[**{crt}**]). Clique no botão ao lado 👉.', 
                         icon='✔️')
-    upDownScroll(2)
+    upDownScroll(6)
     
 def extractImgs(filePdf):
     docPdf = pymupdf.open(filePdf)
@@ -595,8 +596,8 @@ def extractPgs(docPdf, numPgOne, numPgTwo, mode, namePdf, index):
     for file in filesPdf:
         diffPg = abs(numPgTwo - numPgOne)
         minPg = min([numPgOne, numPgTwo])
+        listPg = [pg for pg in range(minPg, diffPg)]  
         if st.session_state[listKeys[5]] != -1:
-            listPg = [pg for pg in range(minPg, diffPg)]        
             for p, pageNum in enumerate(listPg):
                 inputPdf = file
                 outputPdf = f'{name}_{pageNum + 1}.pdf'
@@ -610,10 +611,7 @@ def extractPgs(docPdf, numPgOne, numPgTwo, mode, namePdf, index):
         else:
             listPgBlock = [pg for pg in range(minPg, diffPg)] 
             sizeSegment = st.session_state[listKeys[6]]
-            listAllBlocks = []
-            for i in range(listPgBlock[0], len(listPgBlock), sizeSegment):
-                segment = listPgBlock[i:i + sizeSegment]
-                listAllBlocks.append(segment)
+            listAllBlocks = list(itertools.batched(listPg, sizeSegment))
             for listPg in listAllBlocks:
                 inputPdf = file
                 pageIni = listPg[0] + 1
@@ -859,13 +857,8 @@ def seqPages(numPgOne, numPgTwo):
             listPgs = [pg for pg in range(numPgOne, numPgTwo) if (pg+1)%mult==0]        
     return listPgs  
 
-def upDownScroll(mode):
-    if mode == 1: 
-        label = "👇"
-    elif mode == -1:
-        label = "👆"
-    elif mode == 2:
-        label = "👍"
+def upDownScroll(w):
+    label = icons[w][0]
     jsCode = f"""
         <script>
             var lastNameInput = window.parent.document.querySelector('input[aria-label={label}]');
@@ -906,7 +899,7 @@ def main():
             with st.container(border=4, key='contTwo'):
                 colEmptyOne, colDate, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
                                                                width='stretch')
-                colDate.markdown(f'📋:blue[**Parâmetros básicos**] (:red[**{lenColsDate}**])', unsafe_allow_html=True, 
+                colDate.markdown(f':material/cards: :blue[**Parâmetros básicos**] (:red[**{lenColsDate}**])', unsafe_allow_html=True, 
                                  help='Exibe as opções básicas de paginação, ângulo de rotação e de divisão por tamanho.')
                 colPgOne, colPgTwo, colSize, colSlider = st.columns(sizeColsDate, vertical_alignment='bottom', 
                                                                     width='stretch')
@@ -923,20 +916,34 @@ def main():
                 valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
                                                      key=listKeys[2], 
                                                      help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
-            with st.container(border=None, key='webDown'):                
-                colIcoFinal, colButtFinal, colButtClear = st.columns([1, 11, 11], vertical_alignment='bottom', 
-                                                       width='stretch')
-                textIcoFinal = colIcoFinal.text_input('👇', icon="🚩", width=40)
+            with st.container(border=6, key='webDown'):                
+                colIcoFinal, colIcoBasic, colIcoExtract, colIcoOther, colIcoConv, colButtFinal, colButtClear = st.columns([3, 10, 10, 10, 10, 10, 10], 
+                                                                                                              vertical_alignment='center', 
+                                                                                                              width='stretch')
+                textIcoFinal = colIcoFinal.text_input(icons[0][0], icon=icons[0][1], width=40)
+                buttBottomBasic = colIcoBasic.button(label=dictButts[keysButts[31]][0], key=keysButts[31], 
+                                                     use_container_width=True, icon=dictButts[keysButts[31]][1], 
+                                                     help=dictButts[keysButts[31]][-1]) 
+                buttBottomExtract = colIcoExtract.button(label=dictButts[keysButts[32]][0], key=keysButts[32], 
+                                                     use_container_width=True, icon=dictButts[keysButts[32]][1], 
+                                                     help=dictButts[keysButts[32]][-1])
+                buttBottomOther = colIcoOther.button(label=dictButts[keysButts[33]][0], key=keysButts[33], 
+                                                     use_container_width=True, icon=dictButts[keysButts[33]][1], 
+                                                     help=dictButts[keysButts[33]][-1])                
+                buttBottomConv = colIcoConv.button(label=dictButts[keysButts[34]][0], key=keysButts[34], 
+                                                     use_container_width=True, icon=dictButts[keysButts[34]][1], 
+                                                     help=dictButts[keysButts[34]][-1])                
                 buttBottomWeb = colButtFinal.button(label=dictButts[keysButts[29]][0], key=keysButts[29], 
-                                                   use_container_width=True, icon=dictButts[keysButts[29]][1], 
-                                                   help=dictButts[keysButts[29]][-1]) 
+                                                    use_container_width=True, icon=dictButts[keysButts[29]][1], 
+                                                    help=dictButts[keysButts[29]][-1]) 
                 buttPgClear = colButtClear.button(label=dictButts[keysButts[4]][0], key=keysButts[4], 
                                                   use_container_width=True, icon=dictButts[keysButts[4]][1], 
                                                   help=dictButts[keysButts[4]][-1]) 
             with st.container(border=4, key='contThree'):
-                colEmptyOne, colSupport, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                colBasic, colSupport, colEmptyOnly = st.columns(spec=3, vertical_alignment='center', 
                                                                   width='stretch')
-                colSupport.markdown(f'🔩:blue[**Telas de apoio**] (:red[**{lenColsSupp}**])', unsafe_allow_html=True, 
+                textIcoBasic = colBasic.text_input(icons[1][0], icon=icons[1][1], width=40)
+                colSupport.markdown(f':material/cards: :blue[**Telas de apoio**] (:red[**{lenColsSupp}**])', unsafe_allow_html=True, 
                                     help='Exibe as opções para as telas de apoio.')                                                        
                 colPgs, colWords, colptRotate, colOptPlans = st.columns(sizeColsSuppOne, vertical_alignment='bottom', 
                                                                         width='stretch')                
@@ -967,9 +974,10 @@ def main():
                                                   icon=dictButts[keysButts[16]][1], key=keysButts[16], 
                                                   help=dictButts[keysButts[16]][-1])
             with st.container(border=4, key='contFour'):
-                colEmptyOne, colExtract, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                colBasic, colExtract, colEmptyOnly = st.columns(spec=3, vertical_alignment='center', 
                                                                   width='stretch')
-                colExtract.markdown(f'🎛️:blue[**Extração de objetos**] (:red[**{lenColsText}**])', unsafe_allow_html=True, 
+                textIcoExtract = colBasic.text_input(icons[2][0], icon=icons[2][1], width=40)
+                colExtract.markdown(f':material/cards: :blue[**Extração de objetos**] (:red[**{lenColsText}**])', unsafe_allow_html=True, 
                                     help='Exibe as opções para extração de texto, imagem, URL e código HTML.') 
                 colButtTxt, colButtImg, colButtUrl, colButtHtml= st.columns(sizeColsText, vertical_alignment='bottom', 
                                                                  width='stretch')
@@ -986,9 +994,10 @@ def main():
                                                    use_container_width=True, icon=dictButts[keysButts[28]][1], 
                                                    help=dictButts[keysButts[28]][-1])
             with st.container(border=4, key='contFive'):
-                colEmptyOne, colMult, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                colBasic, colMult, colEmptyOnly = st.columns(spec=3, vertical_alignment='center', 
                                                                   width='stretch')
-                colMult.markdown(f'🎛️:blue[**Outras operações**] (:red[**{lenColsMult}**])', unsafe_allow_html=True, 
+                textIcoOther = colBasic.text_input(icons[3][0], icon=icons[3][1], width=40)
+                colMult.markdown(f':material/cards: :blue[**Outras operações**] (:red[**{lenColsMult}**])', unsafe_allow_html=True, 
                                   help='Exibe diversas opções de tratamento/manipulação de PDF.') 
                 colButtDiv, colButtSize, colButtSel, colCode = st.columns(sizeColsMultOne, vertical_alignment='bottom', 
                                                                           width='stretch')
@@ -1034,9 +1043,10 @@ def main():
                                                   use_container_width=True, icon=dictButts[keysButts[9]][1], 
                                                   help=dictButts[keysButts[9]][-1])            
             with st.container(border=4, key='contSix'):
-                colEmptyOne, colMult, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
+                colBasic, colMult, colEmptyOnly = st.columns(spec=3, vertical_alignment='center', 
                                                                width='stretch')
-                colMult.markdown(f'🎛️:blue[**Conversão de formato**] (:red[**{lenColsFormat}**])', unsafe_allow_html=True, 
+                textIcoConv = colBasic.text_input(icons[4][0], icon=icons[4][1], width=40)
+                colMult.markdown(f':material/cards: :blue[**Conversão de formato**] (:red[**{lenColsFormat}**])', unsafe_allow_html=True, 
                                   help='Exibe opções de conversão de PDF em outros formatos.')
                 colToTable, colToWord, colToImg, colToPower = st.columns(sizeColsFormat, vertical_alignment='bottom', 
                                                                                 width='stretch')
@@ -1052,13 +1062,13 @@ def main():
                 buttToPower = colToPower.button(label=dictButts[keysButts[13]][0], key=keysButts[13], 
                                                 use_container_width=True, icon=dictButts[keysButts[13]][1], 
                                                 help=dictButts[keysButts[13]][-1])       
-                with st.container(border=None, key='webUp'):                      
-                    colIcoIni, colButtIni = st.columns([1,22], vertical_alignment='bottom', 
-                                           width='stretch')
-                    textIcoIni = colIcoIni.text_input('👆', icon="🚩", width=40)
-                    buttTopWeb = colButtIni.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
-                                                   use_container_width=True, icon=dictButts[keysButts[30]][1], 
-                                                   help=dictButts[keysButts[30]][-1])
+            with st.container(border=4, key='webUp'):                      
+                colIcoIni, colButtIni = st.columns([1,22], vertical_alignment='center', 
+                                                   width='stretch')
+                textIcoIni = colIcoIni.text_input(icons[5][0], icon=icons[5][1], width=40)
+                buttTopWeb = colButtIni.button(label=dictButts[keysButts[30]][0], key=keysButts[30], 
+                                               use_container_width=True, icon=dictButts[keysButts[30]][1], 
+                                               help=dictButts[keysButts[30]][-1])
             if numPgTwo >= numPgOne: 
                 numPgIni = numPgOne
                 numPgFinal = numPgTwo
@@ -1078,9 +1088,17 @@ def main():
             if buttOptSlides: 
                 windowDocsImgs(keySlides, 3)
             if buttBottomWeb: 
-               upDownScroll(-1) 
+               upDownScroll(5) 
             if buttTopWeb:
-               upDownScroll(1) 
+               upDownScroll(0) 
+            if buttBottomBasic:
+               upDownScroll(1)
+            if buttBottomExtract:
+               upDownScroll(2) 
+            if buttBottomOther:
+               upDownScroll(3) 
+            if buttBottomConv:
+               upDownScroll(4) 
             if buttPdfDiv:  
                 try:
                     expr = f'{dictButts[keysButts[0]][2]} {pdfName} n{exprPre}'
@@ -1096,7 +1114,7 @@ def main():
                     with st.spinner(expr):
                         selTxtUrlPgs(docPdf, numPgOne, numPgTwo, pdfName, 0, indexAng)
                 except:
-                     config(f'😢 Extração de texto fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
+                    config(f'😢 Extração de texto fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!')
             if buttPgSel:
                 try:
                     expr = f'{dictButts[keysButts[2]][2]} {pdfName} {exprPre}'
@@ -1300,6 +1318,14 @@ if __name__ == '__main__':
     global qrCodeKeys, valuesReserve
     global dictButts, keysButts
     global keyWords, keyDocs, keyImgs, keyTables, keySlides
+    global icons
+    icons = [['📃', '📌'], 
+             ['🛠', '📌'],  
+             ['🔧', '📌'], 
+             ['🔨', '📌'], 
+             ['⛏', '📌'], 
+             ['🧾', '📌'], 
+             ['👍', '📌']]
     nameApp = 'Ferramentas/PDF'
     valAngles = ['-360°', '-270°', '-180°', '-90°', '0°', '90°', '180°', '270°', '360°']
     optionsSel = ['', 'pares', 'não pares', 'todos', 'múltiplos de ']
@@ -1312,7 +1338,7 @@ if __name__ == '__main__':
                 'valueMult': 0}
     listKeys = list(dictKeys.keys())
     dictButts = {'buttDivPg': ['Divisão/blocos', ':material/splitscreen:', 'Dividindo o arquivo ', 
-                                'Divide o arquivo de acordo com o intervalo de páginas.'], 
+                               'Divide o arquivo de acordo com o intervalo de páginas.'], 
                  'buttTxt': ['Texto', ':material/text_ad:', 'Extraindo texto do arquivo ', 
                              'Extrai texto do arquivo e grava o resultado como txt.'],
                  'buttSel': ['Seleção', ':material/filter_alt:', 'Selecionando do arquivo ', 
@@ -1369,10 +1395,18 @@ if __name__ == '__main__':
                                  'Abre janela com opções de páginas e rotação.'], 
                  'buttTxtHtml': ['HTML', ':material/code_blocks:', 'Extraindo texto do arquivo ', 
                                  'Extrai conteúdo HTML e grava o resultado como txt.'], 
-                 'buttFinal': ['Rodapé do aplicativo', ':material/arrow_circle_down:', 'Indo para o final da página ', 
+                 'buttFinal': ['Rodapé', icons[5][0], 'Indo para o final da página ', 
                                'Rola até o final da página do aplicativo.'], 
-                 'buttIni': ['Topo do aplicativo', ':material/arrow_circle_up:', 'Extraindo texto do arquivo ', 
-                             'Rola até o topo da página do aplicativo.']}
+                 'buttIni': ['Topo', icons[0][0], 'Indo para o topo da página ', 
+                             'Rola até o topo da página do aplicativo.'], 
+                 'buttBasic': ['Apoio', icons[1][0], 'Indo para o bloco "Telas de apoio"', 
+                               'Rola até o bloco "Telas de apoio" do aplicativo.'], 
+                 'buttExtract': ['Extração', icons[2][0], 'Indo para o bloco "Extração de objetos"', 
+                                 'Rola até o bloco "Extração de objetos" do aplicativo.'], 
+                 'buttOther': ['Operações', icons[3][0], 'Indo para o bloco "Outras operações"', 
+                               'Rola até o bloco "Outras operações" do aplicativo.'], 
+                 'buttOyher': ['Conversão', icons[4][0], 'Indo para o bloco "Conversão de formatos"', 
+                               'Rola até o bloco "Conversão de formatos" do aplicativo.']}
     keysButts = list(dictButts.keys())
     countPg = []
     namesTeste = []
@@ -1401,6 +1435,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
