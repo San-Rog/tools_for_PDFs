@@ -613,7 +613,7 @@ def extractPgs(docPdf, numPgOne, numPgTwo, mode, namePdf, index):
     for file in filesPdf:
         diffPg = abs(numPgTwo - numPgOne)
         minPg = min([numPgOne, numPgTwo])
-        listPg = [pg for pg in range(minPg, diffPg)]  
+        listPg = seqPages(numPgOne, numPgTwo)
         if st.session_state[listKeys[5]] != -1:
             for p, pageNum in enumerate(listPg):
                 inputPdf = file
@@ -877,6 +877,7 @@ def seqPages(numPgOne, numPgTwo):
         case 4:
             mult = st.session_state[listKeys[6]]
             listPgs = [pg for pg in range(numPgOne, numPgTwo) if (pg+1)%mult==0]        
+    st.write(listPgs)
     return listPgs  
 
 def upDownScroll(w):
@@ -1103,6 +1104,8 @@ def main():
                 windowAdd(numPgOne, numPgTwo)
             if buttOptPlans:
                windowDocsImgs(keyTables, 0)
+            if buttOptRotate:
+                pass
             if buttOptDocs: 
                 windowDocsImgs(keyDocs, 1)  
             if buttOptImgs:
@@ -1126,8 +1129,8 @@ def main():
                     expr = f'{dictButts[keysButts[0]][2]} {pdfName} n{exprPre}'
                     with st.spinner(expr):
                         extractPgs(docPdf, numPgIni, numPgFinal, 0, pdfName, indexAng)
-                except:
-                    config(f'😢 Divisão fracassada!\n🔴 arquivo {namePdf}, intervalo de páginas {numPgOne}-{numPgTwo}!') 
+                except Exception as error:
+                    config(f'{error} --- 😢 Divisão fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!') 
             if buttPerson:
                 exibeQrCode()
             if buttPgSel:
@@ -1465,6 +1468,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
