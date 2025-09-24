@@ -23,13 +23,11 @@
 .element-container:nth-of-type(1) input:hover {
 	background-color: #E0FFFF;
 	text-align: center;
-	color: white;
 }
 
 .element-container:nth-of-type(1) input:active {
 	text-decoration-line: underline; 
 	text-align: center;
-	color: white;
 }
 
 .element-container:nth-of-type(1) input:not(:hover) {
@@ -37,6 +35,7 @@
 	text-align: center; 
 	color: black;
 }
+
 
 
 
