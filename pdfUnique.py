@@ -934,7 +934,7 @@ def main():
                                                  help=f'Digite, incremente ou decremente um número até o máximo de "{valMx}".')
                 valPgSize = colSize.number_input(label='Tamanho para divisão (:red[**MB**])', key=listKeys[3], 
                                                  min_value=dictKeys[listKeys[3]], step=dictKeys[listKeys[3]],  
-                                                 max_value=valMxSize, 
+                                                 max_value=valMxSize, format="%0.2f", 
                                                  help='Digite, incremente ou decremente o tamanho de cada fração do arquivo.')
                 valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
                                                      key=listKeys[2], 
@@ -1468,6 +1468,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
