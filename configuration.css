@@ -20,6 +20,23 @@
 	color: black;	
 }
 
+.element-container:nth-of-type(1) input:hover {
+	background-color: #FFE4C4;
+	text-align: center;
+}
+
+.element-container:nth-of-type(1) input:active {
+	text-decoration-line: underline; 
+	text-align: center;
+}
+
+.element-container:nth-of-type(1) input:not(:hover) {
+	background-color: #F0FFF0;
+	text-align: center; 
+	color: blue;
+}
+
+
 
 
 
