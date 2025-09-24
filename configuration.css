@@ -33,8 +33,8 @@
 .element-container:nth-of-type(1) input:not(:hover) {
 	background-color: #F0FFF0;
 	text-align: center; 
-	color: blue;
 }
+
 
 
 
