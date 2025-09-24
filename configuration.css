@@ -21,19 +21,23 @@
 }
 
 .element-container:nth-of-type(1) input:hover {
-	background-color: #FFE4C4;
+	background-color: CornflowerBlue;
 	text-align: center;
+	color: white;
 }
 
 .element-container:nth-of-type(1) input:active {
 	text-decoration-line: underline; 
 	text-align: center;
+	color: white;
 }
 
 .element-container:nth-of-type(1) input:not(:hover) {
-	background-color: #F0FFF0;
+	background-color: #FFFFF0;
 	text-align: center; 
+	color: black;
 }
+
 
 
 
