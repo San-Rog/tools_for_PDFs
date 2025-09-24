@@ -21,7 +21,7 @@
 }
 
 .element-container:nth-of-type(1) input:hover {
-	background-color: CornflowerBlue;
+	background-color: #4682B4;
 	text-align: center;
 	color: white;
 }
@@ -33,10 +33,11 @@
 }
 
 .element-container:nth-of-type(1) input:not(:hover) {
-	background-color: #FFFFF0;
+	background-color: #FFFAFA;
 	text-align: center; 
 	color: black;
 }
+
 
 
 
