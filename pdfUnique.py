@@ -83,7 +83,7 @@ def mensResult(value, nFiles, modelButt, fileTmp, fileFinal):
                 crt = f'{optionsSel[opt]} {st.session_state[listKeys[6]]}' 
         else: 
           crt = f'segmentação com base em {st.session_state[listKeys[6]]} página(s)'  
-    colIcoLim, colMens, colDown = st.columns([1, 16, 4], vertical_alignment='bottom', 
+    colIcoLim, colMens, colDown = st.columns([0.5, 16, 4], vertical_alignment='bottom', 
                                                          width='stretch')
     textIcoLim = colIcoLim.text_input(icons[6][0], icon=icons[6][1], width=30)
     if value == 1:
@@ -1468,6 +1468,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
