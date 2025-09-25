@@ -1,5 +1,5 @@
 ::selection {
-  background: yellow;
+  background: #87CEEB;
 }
 
 .element-container:nth-of-type(1) button:hover {
@@ -20,20 +20,33 @@
 	color: black;	
 }
 
+.element-container:nth-of-type(1) button:focus {
+	background-color: CornflowerBlue;
+	color: white;
+	box-shadow: 2px 3px 5px #888;	
+}
+
 .element-container:nth-of-type(1) input:hover {
-	background-color: #E0FFFF;
-	text-align: center;
+	background-color: #87CEEB;
+	text-align: center;	
+	color: white;
 }
 
 .element-container:nth-of-type(1) input:active {
 	text-decoration-line: underline; 
 	text-align: center;
+	color: white;
 }
 
 .element-container:nth-of-type(1) input:not(:hover) {
-	background-color: #FFFAFA;
+	background-color: #FFFFF0;
 	text-align: center; 
-	color: black;
+}
+
+.element-container:nth-of-type(1) input:focus {
+	background-color: #87CEEB;
+	text-align: center;	
+	color: white;
 }
 
 
