@@ -2,8 +2,7 @@ import streamlit as st
 
 def main():
     dictPages = {'Tela Inicial': ["pdfInitial.py", "🏠"], 
-                 'Ferramentas/PDF/Único': ["pdfUnique.py", "✴️"], 
-                 'Ferramentas/PDF/Múltiplos': ["pdfMult.py", "✳️"]}
+                 'Ferramentas/PDF/Único': ["pdfUnique.py", "✴️"]}
     pages = []
     keyPages = list(dictPages.keys())
     for l, key in enumerate(keyPages):
@@ -24,5 +23,6 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
     main()
+
 
 
