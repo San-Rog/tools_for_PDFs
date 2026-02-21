@@ -682,7 +682,6 @@ def exibeInfo(docPdf):
                     metaKey = trace
             if k in [2, 3]:
                 metaKey = configDate(metaKey) 
-            #infoDictKeys = {'Metadado': [], 'Informação': []}
             infoDictKeys['Metadado'].append(dictKeys[key])
             infoDictKeys['Informação'].append(metaKey)
         df = pd.DataFrame(infoDictKeys)
@@ -877,7 +876,6 @@ def seqPages(numPgOne, numPgTwo):
         case 4:
             mult = st.session_state[listKeys[6]]
             listPgs = [pg for pg in range(numPgOne, numPgTwo) if (pg+1)%mult==0]        
-    st.write(listPgs)
     return listPgs  
 
 def upDownScroll(w):
@@ -905,7 +903,9 @@ def main():
             pdfName = uploadPdf.name
             docPdf = pymupdf.open(stream=uploadPdf.read(), filetype="pdf")
             valMx = docPdf.page_count 
+            st.session_state[listKeys[1]] = valMx
             valMxSize = round(uploadPdf.size/(1024**2), 2)
+            valAngleMin = dictKeys[listKeys[3]]
             sizeColsDate = [1.2, 1.2, 1.4, 1.8]
             lenColsDate = len(sizeColsDate)
             sizeColsSuppOne = [1 for n in range(number)]
@@ -919,6 +919,24 @@ def main():
             lenColsMult = len(sizeColsMultOne) + len(sizeColsMultTwo) + len(sizeColsMultThree)
             sizeColsFormat = [1 for n in range(number)]
             lenColsFormat = len(sizeColsFormat)
+            if valMx == 1:
+                helpPgOne = f'Tendo o arquivo apenas "1" página, não será possível o incremento ou decremento.'
+                disabPgOne = True
+                st.session_state[listKeys[3]] = valMxSize
+                helpAngle = f'Tendo o arquivo apenas "1" página e tamanho de "{valMxSize}"MB, não será possível dividi-lo em tamanho diferente.'
+                disabAngle = True
+            else:
+                if valAngleMin == valMxSize:
+                    helpAngle = f'Tendo o arquivo apenas "{valAngleMin}"MB, não será possível dividi-lo em tamanho diferente.'
+                    disabAngle = True
+                else:
+                    helpAngle = ('Digite, incremente ou decremente o tamanho de cada fração do arquivo, '
+                                 f'do mínimo de "{valAngleMin}" até o máximo de {valMxSize}MB.')
+                    disabAngle = False
+                helpPgOne = f'Digite, incremente ou decremente um número entre "1" e "{valMx}".'
+                disabPgOne = False
+            helpPgTwo = helpPgOne
+            disabPgTwo = disabPgOne
             with st.container(border=4, key='contTwo'):
                 colEmptyOne, colDate, colEmptyTwo = st.columns(spec=3, vertical_alignment='bottom', 
                                                                width='stretch')
@@ -928,14 +946,14 @@ def main():
                                                                     width='stretch')
                 numPgOne = colPgOne.number_input(label='Página inicial  (:red[**1**])', key=listKeys[0], 
                                                  min_value=1, max_value=valMx, 
-                                                 help=f'Digite, incremente ou decremente um número entre "1" e "{valMx}".')
+                                                 help=helpPgOne, disabled=disabPgOne)
                 numPgTwo = colPgTwo.number_input(label=f'Página final  (:red[**{valMx}**])', key=listKeys[1], 
                                                  min_value=1, max_value=valMx, 
-                                                 help=f'Digite, incremente ou decremente um número até o máximo de "{valMx}".')
+                                                 help=helpPgTwo, disabled=disabPgTwo)
                 valPgSize = colSize.number_input(label='Tamanho para divisão (:red[**MB**])', key=listKeys[3], 
                                                  min_value=dictKeys[listKeys[3]], step=dictKeys[listKeys[3]],  
                                                  max_value=valMxSize, format="%0.2f", 
-                                                 help='Digite, incremente ou decremente o tamanho de cada fração do arquivo.')
+                                                 help=helpAngle, disabled=disabAngle)
                 valPgAngle = colSlider.select_slider(label='Ângulo de rotação', options=valAngles, 
                                                      key=listKeys[2], 
                                                      help='Escolha o ângulo de rotação deslizando o botão para a esquerda ou direita.')
