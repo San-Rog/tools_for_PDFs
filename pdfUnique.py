@@ -906,6 +906,7 @@ def main():
             docPdf = pymupdf.open(stream=uploadPdf.read(), filetype="pdf")
             valMx = docPdf.page_count 
             valMxSize = round(uploadPdf.size/(1024**2), 2)
+            st.session_state(listKeys[1]) = valMxSize
             sizeColsDate = [1.2, 1.2, 1.4, 1.8]
             lenColsDate = len(sizeColsDate)
             sizeColsSuppOne = [1 for n in range(number)]
@@ -1468,6 +1469,7 @@ if __name__ == '__main__':
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
+
 
 
 
