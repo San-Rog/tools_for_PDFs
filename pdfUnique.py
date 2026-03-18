@@ -897,8 +897,7 @@ def main():
         uploadPdf = st.file_uploader('Selecionar arquivo PDF', 
                                      type=['pdf'], 
                                      accept_multiple_files=False,
-                                     label_visibility="collapsed", 
-                                     max_size=300*1024*1024)
+                                     label_visibility="collapsed")
         if uploadPdf is not None:
             number = 4
             pdfName = uploadPdf.name
