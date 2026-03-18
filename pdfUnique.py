@@ -898,7 +898,7 @@ def main():
                                      type=['pdf'], 
                                      accept_multiple_files=False,
                                      label_visibility="collapsed", 
-                                     max_size=1*1023*1024*1024)
+                                     max_size=1*1024*1024*1024)
         if uploadPdf is not None:
             number = 4
             pdfName = uploadPdf.name
