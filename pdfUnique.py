@@ -1359,8 +1359,8 @@ def main():
                     expr = f'{dictButts[keysButts[22]][2]} {pdfName} n{exprPre}'
                     with st.spinner(expr):
                         selPdfRemoveMark(docPdf, numPgOne, numPgTwo, pdfName, indexAng)
-                except:
-                    config(f"😢 Remoção de marca d'água fracassada!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!")
+                except Exception as error:
+                    config(f"😢 Remoção de marca d'água fracassada {error}!\n🔴 arquivo {pdfName}, intervalo de páginas {numPgOne}-{numPgTwo}!")
                         
 if __name__ == '__main__':
     global dictKeys, listKeys 
