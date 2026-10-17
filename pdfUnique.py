@@ -756,13 +756,13 @@ def exibeWord():
             else:
                 typeInput = 'default'
                 wordInput = 'Digite a palavra a ser deletada. Maiúsculas/minúsculas são ignoradas, mas a acentuação será levada em conta.'
-            optWord = st.text_input(label=f'Digite a {optWord.lower()}.', key=keyWords[ind], placeholder='', 
+            optWordInput = st.text_input(label=f'Digite a {optWord.lower()}.', key=keyWords[ind], placeholder='', 
                                     value='', type=typeInput, help=wordInput)
             buttReturn = st.button('retornar')        
             if buttReturn:
                 del st.session_state[keyWords]
                 st.session_state[keyWords] = ['', '', '']
-                st.session_state[keyWords][ind] = optWord
+                st.session_state[keyWords][ind] = optWordInput
                 st.rerun()            
     config()
                 
