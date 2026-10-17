@@ -635,7 +635,7 @@ def extractPgs(docPdf, numPgOne, numPgTwo, mode, namePdf, index):
                 pageFinal = listPg[-1] + 1
                 outputPdf = f'{name}_pgs_{pageIni}_{pageFinal}.pdf'
                 newPdf = pymupdf.open()
-                newPdf.insert_pdf(inputPdf, from_page=pageIni, to_page=pageFinal)
+                newPdf.insert_pdf(inputPdf, from_page=pageIni-1, to_page=pageFinal)
                 newPdf.save(outputPdf)
                 if index != 4:
                     outputPdf = rotatePdf(outputPdf, index) 
