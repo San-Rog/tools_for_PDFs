@@ -203,9 +203,8 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             temp_writer.add_page(page)
             temp_buffer = io.BytesIO()
             temp_writer.write(temp_buffer)
-            page_size = temp_buffer.tell()            
+            page_size = temp_buffer.tell()/(1024**2)           
             sizeActual += page_size
-            st.write(f"{page_size}, {sizeActual}")
             if sizeActual >= sizeMax:
                 outputPdf = saveAllPdf(outputBase, contPartes, writer)
                 filesCutSave.append(outputPdf)
