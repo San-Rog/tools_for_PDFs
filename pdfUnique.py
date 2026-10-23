@@ -193,7 +193,7 @@ def divideBySize(inputPdf, sizeMax, outputBase):
     try:
         reader = PdfReader(inputPdf)
         nPgs = len(reader.pages)
-        sizeActual = 0
+        current_size = 0
         contPartes = 0
         writer = PdfWriter()
         for i in range(nPgs):
@@ -204,12 +204,16 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             temp_buffer = io.BytesIO()
             writer.write(temp_buffer)
             page_size = temp_buffer.tell()
-            if (sizeActual + page_size) >= sizeMax and len(writer.pages) > 0:
+            if current_size + page_size > sizeMax and len(writer.pages) > 0:
                 outputPdf = saveAllPdf(outputBase, contPartes, writer)
                 filesCutSave.append(outputPdf)
+                out_buffer = io.BytesIO()
+                writer.write(out_buffer)
                 writer = PdfWriter()
-                sizeActual = 0
+                current_size = 0
                 contPartes += 1
+            writer.add_page(page)
+            current_size += page_size
         if len(writer.pages) > 0:
             outputPdf = saveAllPdf(outputBase, contPartes, writer)
             filesCutSave.append(outputPdf)
