@@ -201,10 +201,10 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             namesTeste.append(nameTeste)
             page = reader.pages[i]
             writer.add_page(page) 
-            with open(nameTeste, 'wb') as g:
-                writer.write(g)
-            sizeActual = os.path.getsize(nameTeste)/(1024**2)
-            if sizeActual >= sizeMax:
+            temp_buffer = io.BytesIO()
+            temp_writer.write(temp_buffer)
+            page_size = temp_buffer.tell()
+            if (sizeActual + page_size) >= sizeMax and len(writer.pages) > 0:
                 outputPdf = saveAllPdf(outputBase, contPartes, writer)
                 filesCutSave.append(outputPdf)
                 writer = PdfWriter()
