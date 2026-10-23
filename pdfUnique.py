@@ -203,9 +203,11 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             temp_writer.add_page(page)
             temp_buffer = io.BytesIO()
             temp_writer.write(temp_buffer)
-            page_size = temp_buffer.tell()/(1024**2)           
+            page_size = temp_buffer.tell()/(1024*2)            
             sizeActual += page_size
             if sizeActual >= sizeMax:
+                out_buffer = io.BytesIO()
+                writer.write(out_buffer)
                 outputPdf = saveAllPdf(outputBase, contPartes, writer)
                 filesCutSave.append(outputPdf)
                 writer = PdfWriter()
@@ -216,7 +218,7 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             filesCutSave.append(outputPdf)
     except Exception as e:
         st.error(f"Ocorreu um erro: {e} - página {i+1}", icon='🛑')
-    return filesCutSave  
+    return filesCutSave
 
 def createPdfSel(docPdf, numPgOne, numPgTwo, namePdf, index, rotate):
     numPgOne -= 1    
