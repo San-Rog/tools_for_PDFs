@@ -188,12 +188,10 @@ def saveAllPdf(outputBase, contPartes, writer):
 
 def divideBySize(inputPdf, sizeMax, outputBase):
     filesCutSave = []
-    #margem de segurança de 20%
-    sizeMax *= 0.85   
     try:
         reader = PdfReader(inputPdf)
         nPgs = len(reader.pages)
-        current_size = 0
+        sizeActual = 0
         contPartes = 0
         writer = PdfWriter()
         for i in range(nPgs):
@@ -201,25 +199,21 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             namesTeste.append(nameTeste)
             page = reader.pages[i]
             writer.add_page(page) 
-            temp_buffer = io.BytesIO()
-            writer.write(temp_buffer)
-            page_size = temp_buffer.tell()
-            if current_size + page_size > sizeMax and len(writer.pages) > 0:
+            with open(nameTeste, 'wb') as g:
+                writer.write(g)
+            sizeActual = os.path.getsize(nameTeste)/(1024**2)
+            if sizeActual >= sizeMax:
                 outputPdf = saveAllPdf(outputBase, contPartes, writer)
                 filesCutSave.append(outputPdf)
-                out_buffer = io.BytesIO()
-                writer.write(out_buffer)
                 writer = PdfWriter()
-                current_size = 0
+                sizeActual = 0
                 contPartes += 1
-            writer.add_page(page)
-            current_size += page_size
         if len(writer.pages) > 0:
             outputPdf = saveAllPdf(outputBase, contPartes, writer)
             filesCutSave.append(outputPdf)
     except Exception as e:
         st.error(f"Ocorreu um erro: {e} - página {i+1}", icon='🛑')
-    return filesCutSave    
+    return filesCutSave      
 
 def createPdfSel(docPdf, numPgOne, numPgTwo, namePdf, index, rotate):
     numPgOne -= 1    
