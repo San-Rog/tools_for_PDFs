@@ -188,6 +188,7 @@ def saveAllPdf(outputBase, contPartes, writer):
 
 def divideBySize(inputPdf, sizeMax, outputBase):
     filesCutSave = []
+    sizeMax *= 0.80 #margem de segurnça de 20%
     try:
         reader = PdfReader(inputPdf)
         nPgs = len(reader.pages)
