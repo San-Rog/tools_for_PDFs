@@ -192,25 +192,36 @@ def divideBySize(inputPdf, sizeMax, outputBase):
     try:
         reader = PdfReader(inputPdf)
         nPgs = len(reader.pages)
+        chunks = []
         sizeActual = 0
         contPartes = 0
-        writer = PdfWriter()
+        currentWriter = PdfWriter()
+        pagesChunk = 0
         for i in range(nPgs):
             nameTeste = f'teste_{i+1}.pdf'
             namesTeste.append(nameTeste)
-            page = reader.pages[i]
-            writer.add_page(page) 
-            with open(nameTeste, 'wb') as g:
-                writer.write(g)
-            sizeActual = os.path.getsize(nameTeste)
-            if sizeActual >= sizeMax:
-                outputPdf = saveAllPdf(outputBase, contPartes, writer)
+            currentWriter.add_page(reader.pages[i]) 
+            pagesChunk += 1
+            tempBuffer = io.BytesIO()
+            currentWriter.write(tempBuffer)
+            currentSize = len(tempBuffer.getvalue())
+            if currentSize > sizeMax and pagesChunk > 1:
+                rollbackWriter = PdfWriter()
+                for p in range(i - pagesChunk + 1, i):
+                    rollbackWriter.add_page(reader.pages[p])
+                outputPdf = saveAllPdf(outputBase, contPartes, rollbackWriter)
                 filesCutSave.append(outputPdf)
-                writer = PdfWriter()
-                sizeActual = 0
+                finalBuffer = io.BytesIO()
+                rollbackWriter.write(finalBuffer)
+                chunks.append(finalBuffer.getvalue())
+                currentWriter = PdfWriter()
+                currentWriter.add_page(reader.pages[i])
+                pagesChunk = 1
                 contPartes += 1
-        if len(writer.pages) > 0:
-            outputPdf = saveAllPdf(outputBase, contPartes, writer)
+        finalBuffer = io.BytesIO()
+        currentWriter.write(finalBuffer)
+        if len(finalBuffer.getvalue()) > 0:
+            outputPdf = saveAllPdf(outputBase, contPartes, currentWriter)
             filesCutSave.append(outputPdf)
     except Exception as e:
         st.error(f"Ocorreu um erro: {e} - página {i+1}", icon='🛑')
@@ -1484,7 +1495,7 @@ if __name__ == '__main__':
         st.session_state[keySlides] = []
     st.cache_data.clear() 
     iniFinally(0)
-    with open('configuration.css') as f:
+    with open('configCss.css') as f:
         css = f.read()
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True) 
     main()
