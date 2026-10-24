@@ -188,6 +188,7 @@ def saveAllPdf(outputBase, contPartes, writer):
 
 def divideBySize(inputPdf, sizeMax, outputBase):
     filesCutSave = []
+    sizeMax *= 1024**2
     try:
         reader = PdfReader(inputPdf)
         nPgs = len(reader.pages)
@@ -199,13 +200,10 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             namesTeste.append(nameTeste)
             page = reader.pages[i]
             writer.add_page(page) 
-            temp_writer = PdfWriter()
-            temp_writer.add_page(page)
-            temp_buffer = io.BytesIO()
-            temp_writer.write(temp_buffer)
-            page_size = temp_buffer.tell()/(1024*2)            
-            sizeActual += page_size
-            if sizeActual > sizeMax:                
+            with open(nameTeste, 'wb') as g:
+                writer.write(g)
+            sizeActual = os.path.getsize(nameTeste)
+            if sizeActual >= sizeMax:
                 outputPdf = saveAllPdf(outputBase, contPartes, writer)
                 filesCutSave.append(outputPdf)
                 writer = PdfWriter()
@@ -216,7 +214,7 @@ def divideBySize(inputPdf, sizeMax, outputBase):
             filesCutSave.append(outputPdf)
     except Exception as e:
         st.error(f"Ocorreu um erro: {e} - página {i+1}", icon='🛑')
-    return filesCutSave
+    return filesCutSave    
 
 def createPdfSel(docPdf, numPgOne, numPgTwo, namePdf, index, rotate):
     numPgOne -= 1    
@@ -759,13 +757,13 @@ def exibeWord():
             else:
                 typeInput = 'default'
                 wordInput = 'Digite a palavra a ser deletada. Maiúsculas/minúsculas são ignoradas, mas a acentuação será levada em conta.'
-            optWordInput = st.text_input(label=f'Digite a {optWord.lower()}.', key=keyWords[ind], placeholder='', 
+            optWord = st.text_input(label=f'Digite a {optWord.lower()}.', key=keyWords[ind], placeholder='', 
                                     value='', type=typeInput, help=wordInput)
             buttReturn = st.button('retornar')        
             if buttReturn:
                 del st.session_state[keyWords]
                 st.session_state[keyWords] = ['', '', '']
-                st.session_state[keyWords][ind] = optWordInput
+                st.session_state[keyWords][ind] = optWord
                 st.rerun()            
     config()
                 
